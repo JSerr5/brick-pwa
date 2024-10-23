@@ -50,7 +50,7 @@ function LoginComponent() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+  
     try {
       const response = await fetch('http://localhost:4000/api/login', {
         method: 'POST',
@@ -59,49 +59,63 @@ function LoginComponent() {
         },
         body: JSON.stringify({ username, password }),
       });
-
+  
+      console.log('Respuesta del servidor:', response);
+  
       if (!response.ok) {
         const errorData = await response.json();
+        console.log('Error en la respuesta del servidor:', errorData);
         setError(errorData.message || 'Error desconocido');
         setLoading(false);
         return;
       }
-
+  
       const data = await response.json();
+      console.log('Datos recibidos del servidor:', data);
+  
       if (data.token) {
+        console.log('Token recibido:', data.token);
         localStorage.setItem('token', data.token);
-
+  
         try {
           const decodedToken = decodeToken(data.token);
-
+          console.log('Token decodificado:', decodedToken);
+  
           // Guardar el rol en localStorage
           localStorage.setItem('role', decodedToken.role);
-
+          console.log('Rol guardado en localStorage:', decodedToken.role);
+  
           // Redirigir según el rol
           if (decodedToken.role === 'policía') {
+            console.log('Redirigiendo a dashboard policía');
             navigate('/dashboard-policia');
           } else if (decodedToken.role === 'técnico') {
+            console.log('Redirigiendo a dashboard técnico');
             navigate('/dashboard-tecnico');
           } else if (decodedToken.role === 'admin') {
+            console.log('Redirigiendo a dashboard admin');
             navigate('/dashboard-admin');
           } else {
             setError('Rol desconocido');
           }
         } catch (error) {
+          console.error('Error al decodificar el token:', error);
           setError('El token ha expirado. Por favor, inicia sesión nuevamente.');
           localStorage.removeItem('token');
           navigate('/login');
         }
       } else {
+        console.log('Respuesta inválida del servidor');
         setError('Respuesta inválida del servidor');
       }
     } catch (error) {
+      console.error('Error en el servidor:', error);
       setError('Error en el servidor, intenta de nuevo más tarde.');
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="app" style={{ backgroundImage: `url(${background})`, height: '100vh', backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <h1 className="app-title">BRICK - Monitoreo de Reclusos</h1>
