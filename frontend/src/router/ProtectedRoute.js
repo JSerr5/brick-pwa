@@ -1,23 +1,33 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import decodeToken from '../services/decodeToken.js';
+import { jwtDecode } from 'jwt-decode'; // Importación correcta sin llaves
 
-const ProtectedRoute = ({ role, children }) => {
+const ProtectedRoute = ({ component: Component }) => {
   const token = localStorage.getItem('token');
+
   if (!token) {
+    console.log('No token found, redirecting to login...');
     return <Navigate to="/login" />;
   }
 
   try {
-    const decodedToken = decodeToken(token);
+    const decodedToken = jwtDecode(token);
+    console.log('Token decodificado:', decodedToken);
 
-    // Verificar el rol
-    if (decodedToken.role !== role) {
-      return <Navigate to="/access-denied" />;
+    const currentTime = Date.now() / 1000;
+    console.log(`Tiempo actual: ${currentTime}, Expiración del token: ${decodedToken.exp}`);
+
+    if (decodedToken.exp < currentTime) {
+      console.log('Token expired, redirecting to login...');
+      localStorage.removeItem('token');
+      return <Navigate to="/login" />;
     }
 
-    return children;
+    console.log('Token is valid, rendering protected route...');
+    return <Component />;
   } catch (error) {
+    console.log('Error decoding token or other issue, redirecting to login...', error);
+    localStorage.removeItem('token');
     return <Navigate to="/login" />;
   }
 };

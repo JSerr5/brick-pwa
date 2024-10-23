@@ -1,55 +1,68 @@
 import mysql from 'mysql2/promise';
 import express from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url'; // Necesario para obtener el __dirname en ES Modules
+import { fileURLToPath } from 'url'; 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-dotenv.config();  // Cargar las variables de entorno
+// Cargar las variables de entorno desde .env
+dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
 
 // Conexión a la base de datos MySQL
 const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
-  });
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
+  connectionLimit: 10 // Limitar el número de conexiones
+});
 
-// Simular el comportamiento de __dirname en ES Modules
+// Simular __dirname en ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configurar CORS - Se permiten tanto dominios de producción como locales para desarrollo
-const allowedOrigins = ['http://localhost:3000'];
-app.use(
-  cors({
-    origin: process.env.NODE_ENV === 'development' ? allowedOrigins : '*', // En desarrollo, permite cualquier origen
-  })
-);
+// Configurar CORS - Se permiten tanto dominios de producción como locales
+const allowedOrigins = ['http://localhost:3000']; // Solo permitir localhost en desarrollo
 
-const JWT_SECRET = process.env.JWT_SECRET;  // Obtener JWT_SECRET desde .env
+app.use(cors({ origin: allowedOrigins }));
 
-// Ruta de API para login
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// Middleware para verificar el token
+const authenticateToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Obtener el token
+  if (!token) {
+    return res.status(401).json({ message: 'Token no proporcionado' });
+  }
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // Almacenar los datos decodificados en req.user
+    next(); // Pasar al siguiente middleware
+  } catch (error) {
+    return res.status(403).json({ message: 'Token inválido' });
+  }
+};
+
+// -------------------- Rutas de API --------------------
+
+// Ruta para login
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-
   if (!username || !password) {
     return res.status(400).json({ message: 'Faltan campos de usuario o contraseña' });
   }
-
   try {
-    let userQuery;
-    let user;
     let role = '';
-
-    // Determinar la tabla dependiendo del tipo de usuario
+    let userQuery;
+    
+    // Determinar la tabla según el tipo de usuario
     if (username.startsWith('p')) {
       role = 'policía';
       userQuery = await pool.query('SELECT * FROM policias WHERE id_policia = ?', [username]);
@@ -62,138 +75,114 @@ app.post('/api/login', async (req, res) => {
     } else {
       return res.status(400).json({ message: 'Credenciales incorrectas' });
     }
-
-    user = userQuery[0][0];  // En mysql2 los resultados están en un array dentro de otro array
-
+    
+    const user = userQuery[0][0]; // Acceder al primer resultado
     if (!user) {
       return res.status(400).json({ message: 'Usuario no encontrado' });
     }
 
-    // Comparar la contraseña ingresada con la almacenada en la base de datos
+    // Verificar la contraseña
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (isPasswordValid) {
-      // Generar token JWT dependiendo del rol
-      const token = jwt.sign(
-        { id: user.id_policia || user.id_tecnico || user.id_admin, role: role },
-        JWT_SECRET,
-        { expiresIn: '2h' }
-      );
-
-      return res.json({ token });
-    } else {
+    if (!isPasswordValid) {
       return res.status(400).json({ message: 'Credenciales incorrectas' });
     }
+
+    // Generar el token JWT
+    const token = jwt.sign(
+      { id: user.id_policia || user.id_tecnico || user.id_admin, role },
+      JWT_SECRET,
+      { expiresIn: '2h' }
+    );
+
+    // Enviar el token y el rol al frontend
+    return res.json({ token, role });
+
   } catch (error) {
     return res.status(500).json({ message: 'Error del servidor' });
   }
 });
 
-// Ruta de API para obtener los datos del usuario actual
-app.get('/api/user', async (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Obtener el token del header
-
-  if (!token) {
-    return res.status(401).json({ message: 'Token no proporcionado' });
-  }
-
+// Ruta para obtener los datos del usuario autenticado
+app.get('/api/user', authenticateToken, async (req, res) => {
   try {
-    // Verificar el token JWT
-    const decoded = jwt.verify(token, JWT_SECRET);
-
     let userQuery;
-    let user;
+    const { role, id } = req.user;
 
-    if (decoded.role === 'policía') {
-      userQuery = await pool.query('SELECT nombre FROM policias WHERE id_policia = ?', [decoded.id]);
-    } else if (decoded.role === 'técnico') {
-      userQuery = await pool.query('SELECT nombre FROM tecnicos WHERE id_tecnico = ?', [decoded.id]);
+    // Obtener los datos del usuario según su rol
+    if (role === 'policía') {
+      userQuery = await pool.query('SELECT nombre FROM policias WHERE id_policia = ?', [id]);
+    } else if (role === 'técnico') {
+      userQuery = await pool.query('SELECT nombre FROM tecnicos WHERE id_tecnico = ?', [id]);
+    } else {
+      return res.status(400).json({ message: 'Rol no reconocido' });
     }
 
-    user = userQuery[0][0];  // En mysql2 los resultados están en un array dentro de otro array
-
+    const user = userQuery[0][0];
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    return res.json({ nombre: user.nombre, role: decoded.role });
+    // Devolver los datos del usuario
+    return res.json({ nombre: user.nombre, role });
+
   } catch (error) {
-    return res.status(401).json({ message: 'Token inválido' });
+    return res.status(500).json({ message: 'Error al obtener los datos del usuario' });
   }
 });
 
-// Ruta de API para obtener los dispositivos
-app.get('/api/dispositivos', async (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Obtener el token del header
-
-  if (!token) {
-    return res.status(401).json({ message: 'Token no proporcionado' });
-  }
-
+// Ruta para obtener la lista de dispositivos
+app.get('/api/dispositivos', authenticateToken, async (req, res) => {
   try {
-    // Verificar el token JWT
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    // Consulta para obtener los dispositivos
     const dispositivosQuery = await pool.query('SELECT id_dispositivo FROM dispositivos');
-    const dispositivos = dispositivosQuery[0];  // En mysql2 los resultados están en un array
+    const dispositivos = dispositivosQuery[0]; // Resultados de MySQL
 
     if (!dispositivos.length) {
       return res.status(404).json({ message: 'No se encontraron dispositivos' });
     }
 
-    // Devolver los dispositivos en formato JSON
+    // Devolver la lista de dispositivos
     return res.json(dispositivos);
+
   } catch (error) {
-    console.error('Error al verificar el token o consultar los dispositivos:', error);
-    return res.status(500).json({ message: 'Error del servidor' });
+    return res.status(500).json({ message: 'Error al obtener los dispositivos' });
   }
 });
 
-// Ruta de API para obtener la información detallada de un dispositivo por su ID
-app.get('/api/dispositivos/:id_dispositivo', async (req, res) => {
+// Ruta para obtener la información de un dispositivo por ID
+app.get('/api/dispositivos/:id_dispositivo', authenticateToken, async (req, res) => {
   const { id_dispositivo } = req.params;
-  const token = req.headers.authorization?.split(' ')[1]; // Obtener el token del header
-
-  if (!token) {
-    return res.status(401).json({ message: 'Token no proporcionado' });
-  }
-
   try {
-    // Verificar el token JWT
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    // Consulta para obtener la información detallada del dispositivo
     const dispositivoQuery = await pool.query('SELECT * FROM dispositivos WHERE id_dispositivo = ?', [id_dispositivo]);
-    const dispositivo = dispositivoQuery[0][0];  // En mysql2 los resultados están en un array
+    const dispositivo = dispositivoQuery[0][0];
 
     if (!dispositivo) {
       return res.status(404).json({ message: 'Dispositivo no encontrado' });
     }
 
-    // Devolver la información del dispositivo en formato JSON
+    // Devolver la información del dispositivo
     return res.json(dispositivo);
+
   } catch (error) {
-    console.error('Error al obtener el dispositivo:', error);
-    return res.status(500).json({ message: 'Error del servidor' });
+    return res.status(500).json({ message: 'Error al obtener el dispositivo' });
   }
 });
 
-// Manejar rutas de API no encontradas (404) y redirigir a acceso denegado
-app.use('/api', (req, res, next) => {
-    res.redirect('/frontend/src/pages/Denied/AccessDenied.js'); // Redirigir a la página de acceso denegado
-  });
-  
-  // Redirigir cualquier otra ruta no gestionada a acceso denegado
-  app.get('*', (req, res) => {
-    res.redirect('/frontend/src/pages/Denied/AccessDenied.js'); // Redirigir a la página de acceso denegado
-  });
+// -------------------- Manejo de rutas no encontradas --------------------
+// Rutas de API no encontradas
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: 'Recurso no encontrado' });
+});
 
-// Servir archivos estáticos desde la carpeta 'build' de React
-app.use(express.static(path.join(__dirname, 'build')));
+// Servir archivos estáticos de React desde el build
+app.use(express.static(path.join(__dirname, 'frontend/build')));
 
-// Iniciar el servidor
+// Redirigir cualquier ruta no gestionada al frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+});
+
+// -------------------- Iniciar el servidor --------------------
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

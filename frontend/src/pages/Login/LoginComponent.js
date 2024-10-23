@@ -10,7 +10,7 @@ import tecnico from '../../assets/images/tecnico.jpg';
 import Alert from '../Alert/Alert.js';
 import showIcon from '../../assets/images/show-icon.png';
 import hideIcon from '../../assets/images/hide-icon.png';
-import welcomeAudio from '../../assets/audios/welcome.mp3'; // Importa el archivo de sonido
+import welcomeAudio from '../../assets/audios/welcome.mp3'; 
 
 function LoginComponent() {
   const [username, setUsername] = useState('');
@@ -46,7 +46,6 @@ function LoginComponent() {
     }
   }, []);
   
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -75,6 +74,10 @@ function LoginComponent() {
         try {
           const decodedToken = decodeToken(data.token);
 
+          // Guardar el rol en localStorage
+          localStorage.setItem('role', decodedToken.role);
+
+          // Redirigir según el rol
           if (decodedToken.role === 'policía') {
             navigate('/dashboard-policia');
           } else if (decodedToken.role === 'técnico') {
