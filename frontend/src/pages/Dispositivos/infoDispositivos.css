@@ -1,0 +1,33 @@
+.info-recluso {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+  }
+  
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .info-table {
+    width: 60%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 1.2rem;
+    text-align: left;
+  }
+  
+  .info-table th, .info-table td {
+    border: 1px solid #dddddd;
+    padding: 12px;
+  }
+  
+  .info-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .info-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  

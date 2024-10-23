@@ -1,0 +1,120 @@
+.dashboard-admin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Mover el botón de cerrar sesión a la parte inferior */
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  font-family: 'Arial', sans-serif;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 20px; /* Asegurar que el padding sea consistente */
+}
+
+.admin-title-container {
+  background-color: rgb(255, 255, 255);
+  padding: 0px 20px;
+  border-radius: 10px; /* Redondeo para una estética más amigable */
+}
+
+.admin-title {
+  color: #500b6e;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.admin-logo {
+  width: 100px;
+  height: auto;
+  border-radius: 20%;
+  margin: 0 20px;
+  padding: 0; /* Añadir espacio entre los logos y el título */
+}
+
+.admin-options {
+  display: flex;
+  justify-content: center; /* Asegura que los botones estén centrados */
+  gap: 30px;
+  margin-top: 40px; /* Separar los botones del título */
+}
+
+.admin-button {
+  background-color: white;
+  border: 2px solid black;
+  padding: 20px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  border-radius: 10px;
+  width: 200px;
+  text-align: center;
+}
+
+.admin-button:hover {
+  transform: scale(1.1);
+}
+
+.logout-button {
+  background-color: red;
+  border: 2px solid darkred;
+  color: white;
+  padding: 10px 30px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: 10px;
+  align-self: center;
+  margin-bottom: 20px;
+}
+
+.logout-button:hover {
+  background-color: darkred;
+}
+
+/* Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+  .admin-header h1 {
+      font-size: 2rem;
+  }
+
+  .admin-options {
+      flex-direction: column;
+      align-items: center;
+  }
+
+  .admin-button {
+      margin-bottom: 20px;
+  }
+
+  .logout-button {
+    font-size: 1.7rem;  /* Aumentar el tamaño de la fuente en pantallas móviles */
+    padding: 15px 40px; /* Aumentar el espacio de padding para hacerlo más grande */
+  }
+
+  .admin-logo {
+      margin-left: 10px; /* Espacio desde el borde izquierdo en móviles */
+      margin-right: 10px; /* Espacio desde el borde derecho en móviles */
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-header h1 {
+      font-size: 1.5rem;
+  }
+
+  .admin-button {
+      font-size: 0.9rem;
+      padding: 10px;
+  }
+
+  .logout-button {
+      font-size: 1rem;
+      padding: 8px 16px;
+  }
+}

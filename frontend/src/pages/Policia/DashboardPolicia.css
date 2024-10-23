@@ -1,0 +1,119 @@
+.dashboard-policia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  font-family: 'Arial', sans-serif;
+}
+
+.policia-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.policia-title-container {
+  background-color: rgba(255, 255, 255); 
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+.policia-title {
+  color: #318d16;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.policia-logo {
+  width: 100px;
+  height: auto;
+  border-radius: 20%;
+  margin: 0 20px;
+}
+
+.policia-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  margin-top: 40px;
+}
+
+.policia-button {
+  background-color: white;
+  border: 2px solid black;
+  padding: 20px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  border-radius: 10px;
+  width: 250px;
+  text-align: center;
+}
+
+.policia-button:hover {
+  transform: scale(1.1);
+}
+
+.logout-button {
+  background-color: red;
+  border: 2px solid darkred;
+  color: white;
+  padding: 10px 30px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.logout-button:hover {
+  background-color: darkred;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .policia-title {
+    font-size: 2rem;
+  }
+
+  .policia-options {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .policia-button {
+    margin-bottom: 20px;
+  }
+
+  .logout-button {
+    font-size: 1.7rem;
+    padding: 15px 40px;
+  }
+
+  .policia-logo {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .policia-title {
+    font-size: 1.5rem;
+  }
+
+  .policia-button {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  .logout-button {
+    font-size: 1rem;
+    padding: 8px 16px;
+  }
+}
