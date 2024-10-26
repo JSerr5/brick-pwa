@@ -7,6 +7,8 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import { generateToken, verifyToken } from "./auth.js";
+import { hashPassword } from "./hashPassword.js";
+import { check, validationResult } from "express-validator";
 
 // Cargar las variables de entorno desde el archivo .env
 dotenv.config();
@@ -38,78 +40,45 @@ app.use(cors({ origin: allowedOrigins }));
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
-  // Validar si los campos están presentes
   if (!username || !password) {
     console.log("Faltan campos de usuario o contraseña");
-    return res
-      .status(400)
-      .json({ message: "Faltan campos de usuario o contraseña" });
+    return res.status(400).json({ message: "Faltan campos de usuario o contraseña" });
   }
 
   try {
-    let role = ""; // Determinar el rol del usuario
+    let role = "";
     let userQuery;
+    let user;
 
     // Determinar la tabla y el rol según el prefijo del username
     if (username.startsWith("p")) {
       role = "policia";
-      userQuery = await pool.query(
-        "SELECT * FROM policias WHERE id_policia = ?",
-        [username]
-      );
-      const user = userQuery[0][0];
-      if (!user) {
-        return res.status(400).json({ message: "Credenciales incorrectas" });
-      }
-
-      // Generar el token JWT y devolverlo junto con el rol e ID
-      const token = generateToken({ id: user.id_policia, role });
-      return res.json({ token, role, id: user.id_policia });
+      userQuery = await pool.query("SELECT * FROM policias WHERE id_policia = ?", [username]);
     } else if (username.startsWith("t")) {
       role = "tecnico";
-      userQuery = await pool.query(
-        "SELECT * FROM tecnicos WHERE id_tecnico = ?",
-        [username]
-      );
-      const user = userQuery[0][0];
-      if (!user) {
-        return res.status(400).json({ message: "Credenciales incorrectas" });
-      }
-
-      // Generar el token JWT y devolverlo junto con el rol e ID
-      const token = generateToken({ id: user.id_tecnico, role });
-      return res.json({ token, role, id: user.id_tecnico });
+      userQuery = await pool.query("SELECT * FROM tecnicos WHERE id_tecnico = ?", [username]);
     } else if (username === "admin") {
       role = "admin";
-      userQuery = await pool.query("SELECT * FROM admins WHERE username = ?", [
-        username,
-      ]);
-      const user = userQuery[0][0];
-      if (!user) {
-        return res.status(400).json({ message: "Credenciales incorrectas" });
-      }
-
-      // Generar el token JWT y devolverlo junto con el rol e ID
-      const token = generateToken({ id: user.id, role });
-      return res.json({ token, role, id: user.id });
+      userQuery = await pool.query("SELECT * FROM admins WHERE username = ?", [username]);
+    } else {
+      return res.status(400).json({ message: "Rol no reconocido" });
     }
 
-    const user = userQuery[0][0]; // Acceder al primer resultado
+    user = userQuery[0][0];
+
     if (!user) {
       console.log("Credenciales incorrectas");
       return res.status(400).json({ message: "Credenciales incorrectas" });
     }
 
-    // Verificar la contraseña
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       console.log("Contraseña incorrecta");
       return res.status(400).json({ message: "Credenciales incorrectas" });
     }
 
-    // Enviar el token junto con el rol y el id
-    const token = generateToken({ id: user.id, role });
-    return res.json({ token, role, id: user.id });
+    const token = generateToken({ id: user.id || user.id_tecnico || user.id_policia, role });
+    return res.json({ token, role, id: user.id || user.id_tecnico || user.id_policia });
   } catch (error) {
     console.error("Error del servidor en /api/login:", error);
     return res.status(500).json({ message: "Error del servidor" });
@@ -121,24 +90,15 @@ app.get("/api/user", verifyToken, async (req, res) => {
   console.log("Ruta /api/user alcanzada");
 
   try {
-    const { userRole: role, userId: id } = req; // Obtener el rol e id desde el token verificado
+    const { userRole: role, userId: id } = req;
     let userQuery;
 
     if (role === "policia") {
-      userQuery = await pool.query(
-        "SELECT nombre FROM policias WHERE id_policia = ?",
-        [id]
-      );
+      userQuery = await pool.query("SELECT nombre FROM policias WHERE id_policia = ?", [id]);
     } else if (role === "tecnico") {
-      userQuery = await pool.query(
-        "SELECT nombre FROM tecnicos WHERE id_tecnico = ?",
-        [id]
-      );
+      userQuery = await pool.query("SELECT nombre FROM tecnicos WHERE id_tecnico = ?", [id]);
     } else if (role === "admin") {
-      userQuery = await pool.query(
-        "SELECT nombre FROM admins WHERE id = ?",
-        [id]
-      );
+      userQuery = await pool.query("SELECT nombre FROM admins WHERE id = ?", [id]);
     } else {
       return res.status(400).json({ message: "Rol no reconocido" });
     }
@@ -156,18 +116,17 @@ app.get("/api/user", verifyToken, async (req, res) => {
   }
 });
 
-// Nueva ruta para obtener datos específicos de admin
+// Ruta para obtener datos específicos de admin
 app.get("/api/admin/data", verifyToken, async (req, res) => {
   console.log("Ruta /api/admin/data alcanzada");
 
   try {
-    const { userRole: role } = req; // Obtener el rol desde el token
+    const { userRole: role } = req;
 
     if (role !== "admin") {
       return res.status(403).json({ message: "Acceso denegado" });
     }
 
-    // Consultas para obtener datos de técnicos y policías
     const [tecnicos] = await pool.query("SELECT id_tecnico, nombre FROM tecnicos");
     const [policias] = await pool.query("SELECT id_policia, nombre FROM policias");
 
@@ -180,6 +139,240 @@ app.get("/api/admin/data", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error en /api/admin/data:", error);
     return res.status(500).json({ message: "Error en el servidor" });
+  }
+});
+
+// -------------------- Rutas para crud de tecnicos --------------------
+
+// Crear un nuevo técnico
+app.post(
+  "/api/tecnicos",
+  [
+    check("nombre").notEmpty().withMessage("El nombre es requerido"),
+    check("password")
+      .isLength({ min: 6 })
+      .withMessage("La contraseña debe tener al menos 6 caracteres"),
+    check("ciudad").notEmpty().withMessage("La ciudad es requerida"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { nombre, password, ciudad } = req.body;
+    const MAX_ID_NUMBER = 9999999; // Límite máximo para el número del ID
+
+    try {
+      // Obtener el último ID de técnico y calcular el nuevo ID
+      const [lastTechnician] = await pool.query(
+        "SELECT id_tecnico FROM tecnicos ORDER BY id_tecnico DESC LIMIT 1"
+      );
+      let newId;
+
+      if (lastTechnician.length > 0) {
+        const lastIdNumber = parseInt(
+          lastTechnician[0].id_tecnico.replace("t", "")
+        );
+        if (lastIdNumber >= MAX_ID_NUMBER) {
+          return res
+            .status(400)
+            .json({
+              message: "Se ha alcanzado el límite máximo de IDs para técnicos.",
+            });
+        }
+        newId = `t${lastIdNumber + 1}`;
+      } else {
+        newId = "t1"; // Si no hay registros, empieza con t1
+      }
+
+      const hashedPassword = await hashPassword(password);
+      await pool.query(
+        "INSERT INTO tecnicos (id_tecnico, nombre, password, ciudad) VALUES (?, ?, ?, ?)",
+        [newId, nombre, hashedPassword, ciudad]
+      );
+
+      res.status(201).json({ message: "Técnico creado", tecnicoId: newId });
+    } catch (error) {
+      console.error("Error al crear técnico:", error);
+      res.status(500).json({ message: "Error en el servidor" });
+    }
+  }
+);
+
+// Leer todos los técnicos
+app.get("/api/tecnicos", async (req, res) => {
+  try {
+    const [tecnicos] = await pool.query(
+      "SELECT id_tecnico, nombre, ciudad FROM tecnicos"
+    );
+    res.json(tecnicos);
+  } catch (error) {
+    console.error("Error al obtener técnicos:", error);
+    res.status(500).json({ message: "Error en el servidor" });
+  }
+});
+
+// Actualizar un técnico
+app.put(
+  "/api/tecnicos/:id",
+  [
+    check("nombre").notEmpty().withMessage("El nombre es requerido"),
+    check("password")
+      .optional()
+      .isLength({ min: 6 })
+      .withMessage("La contraseña debe tener al menos 6 caracteres"),
+    check("ciudad").notEmpty().withMessage("La ciudad es requerida"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { nombre, password, ciudad } = req.body;
+    const { id } = req.params;
+    try {
+      const hashedPassword = password ? await hashPassword(password) : null;
+      await pool.query(
+        "UPDATE tecnicos SET nombre = ?, ciudad = ?, password = COALESCE(?, password) WHERE id_tecnico = ?",
+        [nombre, ciudad, hashedPassword, id]
+      );
+      res.json({ message: "Técnico actualizado" });
+    } catch (error) {
+      console.error("Error al actualizar técnico:", error);
+      res.status(500).json({ message: "Error en el servidor" });
+    }
+  }
+);
+
+// Eliminar un técnico
+app.delete("/api/tecnicos/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query("DELETE FROM tecnicos WHERE id_tecnico = ?", [id]);
+    res.json({ message: "Técnico eliminado" });
+  } catch (error) {
+    console.error("Error al eliminar técnico:", error);
+    res.status(500).json({ message: "Error en el servidor" });
+  }
+});
+
+// -------------------- Rutas para crud de policias --------------------
+
+// Crear un nuevo policía
+app.post(
+  "/api/policias",
+  [
+    check("nombre").notEmpty().withMessage("El nombre es requerido"),
+    check("password")
+      .isLength({ min: 6 })
+      .withMessage("La contraseña debe tener al menos 6 caracteres"),
+    check("cai_asignado")
+      .notEmpty()
+      .withMessage("El CAI asignado es requerido"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { nombre, password, cai_asignado } = req.body;
+    const MAX_ID_NUMBER = 9999999; // Establece un límite máximo para el número
+
+    try {
+      // Obtener el último ID de policía y calcular el nuevo ID
+      const [lastPolice] = await pool.query(
+        "SELECT id_policia FROM policias ORDER BY id_policia DESC LIMIT 1"
+      );
+      let newId;
+
+      if (lastPolice.length > 0) {
+        const lastIdNumber = parseInt(
+          lastPolice[0].id_policia.replace("p", "")
+        );
+        if (lastIdNumber >= MAX_ID_NUMBER) {
+          return res.status(400).json({
+            message: "Se ha alcanzado el límite máximo de IDs para policías.",
+          });
+        }
+        newId = `p${lastIdNumber + 1}`;
+      } else {
+        newId = "p1"; // Si no hay registros, empieza con p1
+      }
+
+      const hashedPassword = await hashPassword(password);
+      await pool.query(
+        "INSERT INTO policias (id_policia, nombre, password, cai_asignado) VALUES (?, ?, ?, ?)",
+        [newId, nombre, hashedPassword, cai_asignado]
+      );
+
+      res.status(201).json({ message: "Policía creado", policiaId: newId });
+    } catch (error) {
+      console.error("Error al crear policía:", error);
+      res.status(500).json({ message: "Error en el servidor" });
+    }
+  }
+);
+
+// Leer todos los policías
+app.get("/api/policias", async (req, res) => {
+  try {
+    const [policias] = await pool.query(
+      "SELECT id_policia, nombre, cai_asignado FROM policias"
+    );
+    res.json(policias);
+  } catch (error) {
+    console.error("Error al obtener policías:", error);
+    res.status(500).json({ message: "Error en el servidor" });
+  }
+});
+
+// Actualizar un policía
+app.put(
+  "/api/policias/:id",
+  [
+    check("nombre").notEmpty().withMessage("El nombre es requerido"),
+    check("password")
+      .optional()
+      .isLength({ min: 6 })
+      .withMessage("La contraseña debe tener al menos 6 caracteres"),
+    check("cai_asignado")
+      .notEmpty()
+      .withMessage("El CAI asignado es requerido"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { nombre, password, cai_asignado } = req.body;
+    const { id } = req.params;
+    try {
+      const hashedPassword = password ? await hashPassword(password) : null;
+      await pool.query(
+        "UPDATE policias SET nombre = ?, cai_asignado = ?, password = COALESCE(?, password) WHERE id_policia = ?",
+        [nombre, cai_asignado, hashedPassword, id]
+      );
+      res.json({ message: "Policía actualizado" });
+    } catch (error) {
+      console.error("Error al actualizar policía:", error);
+      res.status(500).json({ message: "Error en el servidor" });
+    }
+  }
+);
+
+// Eliminar un policía
+app.delete("/api/policias/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query("DELETE FROM policias WHERE id_policia = ?", [id]);
+    res.json({ message: "Policía eliminado" });
+  } catch (error) {
+    console.error("Error al eliminar policía:", error);
+    res.status(500).json({ message: "Error en el servidor" });
   }
 });
 

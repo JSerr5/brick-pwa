@@ -7,6 +7,8 @@ import DashboardAdmin from "./pages/Admin/DashboardAdmin.js";
 import InfoDispositivo from "./pages/Dispositivos/infoDispositivos.js";
 import AccessDenied from "./pages/Denied/AccessDenied.js";
 import ProtectedRoute from "./components/ProtectedRoute.js";
+import GestionarTecnicos from "./pages/Admin/GestionarTecnicos";
+import GestionarPolicias from "./pages/Admin/GestionarPolicias";
 
 function App() {
   return (
@@ -45,6 +47,24 @@ function App() {
           element={
             <ProtectedRoute>
               <InfoDispositivo />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas de CRUD para Admin */}
+        <Route
+          path="/gestionar-tecnicos"
+          element={
+            <ProtectedRoute>
+              <GestionarTecnicos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gestionar-policias"
+          element={
+            <ProtectedRoute>
+              <GestionarPolicias />
             </ProtectedRoute>
           }
         />

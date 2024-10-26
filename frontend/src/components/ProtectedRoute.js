@@ -31,17 +31,20 @@ const ProtectedRoute = ({ children }) => {
     console.log("Rol del usuario:", userRole); // DEBUG
     console.log("Ruta actual:", path); // DEBUG
 
-    // Actualiza aquí para permitir que el técnico acceda a infoDispositivos
     if (
       (userRole === "tecnico" &&
         !path.startsWith("/dashboard-tecnico") &&
         !path.startsWith("/infoDispositivos")) ||
       (userRole === "policia" && !path.startsWith("/dashboard-policia")) ||
-      (userRole === "admin" && !path.startsWith("/dashboard-admin"))
+      (userRole === "admin" &&
+        !path.startsWith("/dashboard-admin") &&
+        !path.startsWith("/gestionar-tecnicos") &&
+        !path.startsWith("/gestionar-policias"))
     ) {
-      console.warn("Acceso denegado para el rol:", userRole); // DEBUG
+      console.warn(`Acceso denegado para el rol: ${userRole}`);
       return <Navigate to="/access-denied" />;
     }
+    
 
     return children;
   } catch (error) {
