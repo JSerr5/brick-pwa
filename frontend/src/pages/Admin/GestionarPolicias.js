@@ -10,6 +10,8 @@ const GestionarPolicias = () => {
     password: "",
     cai_asignado: "",
   });
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -20,7 +22,6 @@ const GestionarPolicias = () => {
       setPolicias(data);
     } catch (error) {
       setError("Error al obtener policías.");
-      console.error("Error al obtener policías:", error);
     }
   };
 
@@ -42,15 +43,14 @@ const GestionarPolicias = () => {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.message || "Error desconocido al agregar policía.");
+        setError(errorData.message || "Error al agregar policía.");
         return;
       }
       fetchPolicias();
       setFormData({ nombre: "", password: "", cai_asignado: "" });
       setError("");
-    } catch (error) {
+    } catch {
       setError("Error en el servidor al agregar policía.");
-      console.error("Error al agregar policía:", error);
     }
   };
 
@@ -65,9 +65,42 @@ const GestionarPolicias = () => {
       }
       fetchPolicias();
       setError("");
-    } catch (error) {
+    } catch {
       setError("Error en el servidor al eliminar policía.");
-      console.error("Error al eliminar policía:", error);
+    }
+  };
+
+  const handleEdit = (policia) => {
+    setFormData({
+      nombre: policia.nombre,
+      password: "",
+      cai_asignado: policia.cai_asignado,
+    });
+    setEditId(policia.id_policia);
+    setEditMode(true);
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(
+        `http://localhost:4000/api/policias/${editId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+      if (!response.ok) {
+        setError("Error al actualizar policía.");
+        return;
+      }
+      fetchPolicias();
+      setFormData({ nombre: "", password: "", cai_asignado: "" });
+      setEditMode(false);
+      setError("");
+    } catch {
+      setError("Error en el servidor al actualizar policía.");
     }
   };
 
@@ -75,7 +108,15 @@ const GestionarPolicias = () => {
     <div className="gestionar-policias">
       <h2>Gestionar Policías</h2>
       {error && <Alert message={error} onClose={() => setError("")} />}
-      <form onSubmit={handleAdd}>
+      <form onSubmit={editMode ? handleUpdate : handleAdd}>
+        <select onChange={(e) => handleEdit(JSON.parse(e.target.value))}>
+          <option value="">Seleccionar Policía</option>
+          {policias.map((policia) => (
+            <option key={policia.id_policia} value={JSON.stringify(policia)}>
+              {policia.id_policia} - {policia.nombre}
+            </option>
+          ))}
+        </select>
         <input
           type="text"
           name="nombre"
@@ -90,7 +131,7 @@ const GestionarPolicias = () => {
           placeholder="Contraseña"
           value={formData.password}
           onChange={handleChange}
-          required
+          required={!editMode}
         />
         <input
           type="text"
@@ -100,24 +141,24 @@ const GestionarPolicias = () => {
           onChange={handleChange}
           required
         />
-        <button type="submit" className="add-button">
-          Agregar Policía
-        </button>
-      </form>
-
-      <ul className="policias-list">
-        {policias.map((policia) => (
-          <li key={policia.id_policia}>
-            {policia.nombre} - {policia.cai_asignado}
+        <div className="button-group">
+          <button
+            type="submit"
+            className={editMode ? "update-button" : "add-button"}
+          >
+            {editMode ? "Actualizar" : "Añadir"}
+          </button>
+          {editMode && (
             <button
-              onClick={() => handleDelete(policia.id_policia)}
-              className="delete-button"
+              type="button"
+              onClick={() => setEditMode(false)}
+              className="cancel-button"
             >
-              Eliminar
+              Cancelar
             </button>
-          </li>
-        ))}
-      </ul>
+          )}
+        </div>
+      </form>
       <button
         className="back-button"
         onClick={() => navigate("/dashboard-admin")}
