@@ -1,32 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import './infoDispositivos.css';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import "./infoDispositivos.css";
+import tecnicoBG from "../../assets/images/tecnicoBG.jpg";
 
-const InfoRecluso = () => {
-  const { id_dispositivo } = useParams();  // Obtener el ID del dispositivo desde la URL
-  const [dispositivo, setDispositivo] = useState(null);  // Estado para almacenar la información del dispositivo
+const InfoDispositivo = () => {
+  const { id_dispositivo } = useParams();
+  const navigate = useNavigate();
+  const [dispositivo, setDispositivo] = useState(null);
+
+  // ID del técnico desde localStorage (puedes adaptarlo si se guarda de otra forma)
+  const idTecnico = localStorage.getItem("id_tecnico");
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-
     const fetchDispositivoData = async () => {
       try {
-        const response = await fetch(`/api/dispositivos/${id_dispositivo}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        const response = await fetch(
+          `http://localhost:4000/api/dispositivos/${id_dispositivo}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
-          setDispositivo(data);  // Guardar la información del dispositivo
+          setDispositivo(data);
+          console.log("Datos del dispositivo obtenidos:", data);
         } else {
-          console.error('Error al obtener la información del dispositivo');
+          console.error("Error al obtener la información del dispositivo");
         }
       } catch (error) {
-        console.error('Error del servidor:', error);
+        console.error("Error del servidor:", error);
       }
     };
 
@@ -34,12 +40,35 @@ const InfoRecluso = () => {
   }, [id_dispositivo]);
 
   if (!dispositivo) {
-    return <div>Cargando...</div>;  // Mostrar mientras se carga la información
+    return <div>Cargando...</div>;
   }
 
+  const handleBack = () => {
+    const idTecnico = localStorage.getItem("idTecnico"); // Recupera el ID del técnico de localStorage
+    navigate(`/dashboard-tecnico?id=${idTecnico}`);
+  };
+
   return (
-    <div className="info-recluso">
-      <h1>Información del Dispositivo {dispositivo.id_dispositivo}</h1>
+    <div
+      className="info-dispositivo"
+      style={{
+        backgroundImage: `url(${tecnicoBG})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        paddingTop: "0",
+        paddingBottom: "0",
+        margin: "0",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between", // Para distribuir el contenido
+      }}
+    >
+      <h1 className="info-title">
+        Información del Dispositivo {dispositivo.id_dispositivo}
+      </h1>
+
       <table className="info-table">
         <thead>
           <tr>
@@ -62,20 +91,23 @@ const InfoRecluso = () => {
           </tr>
           <tr>
             <td>Estado (Open/Close)</td>
-            <td>{dispositivo.open_close === 1 ? 'Abierto' : 'Cerrado'}</td>
+            <td>{dispositivo.open_close === 1 ? "Abierto" : "Cerrado"}</td>
           </tr>
           <tr>
             <td>Revisado</td>
-            <td>{dispositivo.revisado === 1 ? 'Sí' : 'No'}</td>
+            <td>{dispositivo.revisado === 1 ? "Sí" : "No"}</td>
           </tr>
           <tr>
             <td>Dentro del Rango</td>
-            <td>{dispositivo.in_range === 1 ? 'Sí' : 'No'}</td>
+            <td>{dispositivo.in_range === 1 ? "Sí" : "No"}</td>
           </tr>
         </tbody>
       </table>
+      <button onClick={handleBack} className="back-button">
+        Atrás
+      </button>
     </div>
   );
 };
 
-export default InfoRecluso;
+export default InfoDispositivo;

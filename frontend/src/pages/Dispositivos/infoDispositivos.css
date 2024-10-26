@@ -1,33 +1,90 @@
-.info-recluso {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 50px;
+.info-dispositivo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+}
+
+.info-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #ffffff;
+  text-align: center;
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0); /* Fondo negro con opacidad */
+  border-radius: 8px;
+}
+
+.info-table {
+  width: 100%;
+  max-width: 600px;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1rem;
+  text-align: left;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0);
+}
+
+.info-table th, .info-table td {
+  border: 1px solid #dddddd;
+  padding: 10px;
+  text-align: center;
+  color: #333333;
+}
+
+.info-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.info-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 600px) {
+  .info-title {
+      font-size: 1.5rem;
+      padding: 8px 15px; /* Ajuste de padding para móviles */
   }
-  
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 20px;
-  }
-  
+
   .info-table {
-    width: 60%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 1.2rem;
-    text-align: left;
+      font-size: 0.9rem;
   }
-  
+
   .info-table th, .info-table td {
-    border: 1px solid #dddddd;
-    padding: 12px;
+      padding: 8px;
   }
-  
-  .info-table th {
-    background-color: #f2f2f2;
+
+  .back-button {
+    font-size: 0.9rem;
+    padding: 8px 15px;
+    margin-bottom: 15px;
   }
-  
-  .info-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
+}
+
+.back-button {
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: 20px; /* Espacio desde el borde inferior */
+  padding: 25px 35px; /* Aumenta el tamaño del botón */
+  font-size: 1.1rem; /* Aumenta el tamaño de la fuente */
+  color: #ffffff;
+  background-color: #333333;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0);
+  transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #555555;
+}

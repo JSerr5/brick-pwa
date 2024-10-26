@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import "./DashboardTecnico.css";
 import tecnicoImageLeft from "../../assets/images/tecnico.jpg"; // Imagen a la izquierda
 import alertaImageRight from "../../assets/images/alertaTC.jpg"; // Imagen a la derecha
@@ -7,112 +8,146 @@ import tecnicoBG from "../../assets/images/tecnicoBG.jpg"; // Imagen de fondo
 
 const DashboardTecnico = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search); // Obtener los parámetros de la URL
+  const idTecnico = queryParams.get("id") || localStorage.getItem("idTecnico");
+
   const [nombreTecnico, setNombreTecnico] = useState(""); // Estado para almacenar el nombre del técnico
   const [dispositivos, setDispositivos] = useState([]); // Estado para almacenar la lista de dispositivos
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // Si no hay token, redirigir al login
+    // Verificación de la existencia del token
     if (!token) {
-      console.log("No se encontró token en localStorage. Redirigiendo al login.");
       navigate("/login");
       return;
     }
 
-    // Función para obtener los datos del usuario técnico y los dispositivos
-    const fetchUserData = async () => {
-      try {
-        console.log("Iniciando fetch de datos de usuario...");
-        const response = await fetch("/api/user", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`, // Adjuntar el token en el encabezado
-            "Content-Type": "application/json",
-          },
-        });
-    
-        console.log("Respuesta del servidor:", response); // Mostrar la respuesta completa en la consola
-    
-        if (response.ok) {
-          const data = await response.json();
-          setNombreTecnico(data.nombre);
-          console.log("Nombre del técnico obtenido:", data.nombre);
+    try {
+      // Decodificación del token para verificar el rol
+      const decodedToken = jwtDecode(token);
+      if (decodedToken.role !== "tecnico") {
+        navigate("/access-denied");
+        return;
+      }
 
-          // Después de obtener los datos del usuario, obtener la lista de dispositivos
-          const dispositivosResponse = await fetch("/api/dispositivos", {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`, // Adjuntar el token en el encabezado
-              "Content-Type": "application/json",
-            },
-          });
+      // Función para obtener los datos del usuario técnico y los dispositivos directamente desde la base de datos
+      const fetchUserData = async () => {
+        try {
+          console.log(`Consultando los datos del técnico con ID: ${idTecnico}`);
 
-          if (dispositivosResponse.ok) {
-            const dispositivosData = await dispositivosResponse.json();
-            setDispositivos(dispositivosData); // Almacenar los dispositivos en el estado
-            console.log("Dispositivos obtenidos:", dispositivosData);
+          // Realizamos la consulta al servidor para obtener los datos del técnico con el ID dinámico
+          const response = await fetch(
+            `http://localhost:4000/api/user?role=tecnico&id=${idTecnico}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: token, // Agregar el token en el encabezado
+              },
+            }
+          );
+          console.log("Respuesta del servidor para /api/user:", response);
+
+          if (response.ok) {
+            const contentType = response.headers.get("content-type");
+
+            if (contentType && contentType.includes("application/json")) {
+              const data = await response.json();
+              setNombreTecnico(data.nombre);
+              console.log("Nombre del técnico obtenido:", data.nombre);
+
+              // Después de obtener los datos del usuario, obtener la lista de dispositivos
+              const dispositivosResponse = await fetch(
+                "http://localhost:4000/api/dispositivos",
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+
+              console.log(
+                "Respuesta del servidor para /api/dispositivos:",
+                dispositivosResponse
+              );
+
+              if (dispositivosResponse.ok) {
+                const dispositivosData = await dispositivosResponse.json();
+                setDispositivos(dispositivosData); // Almacenar los dispositivos en el estado
+                console.log("Dispositivos obtenidos:", dispositivosData);
+              } else {
+                console.log("Error al obtener dispositivos.");
+                navigate("/login");
+              }
+            } else {
+              // La respuesta no es JSON
+              const textResponse = await response.text();
+              console.error("La respuesta no es JSON:", textResponse);
+              navigate("/login");
+            }
           } else {
-            console.log("Error al obtener dispositivos. Redirigiendo al login.");
+            console.log(
+              "Error al obtener datos del usuario:",
+              response.status,
+              response.statusText
+            );
             navigate("/login");
           }
-
-        } else {
-          console.log("Error al obtener datos del usuario. Redirigiendo al login.");
+        } catch (error) {
+          console.error("Error al obtener los datos del usuario:", error);
           navigate("/login");
         }
-      } catch (error) {
-        console.error("Error al obtener los datos del usuario:", error);
-        navigate("/login");
-      }
-    };
+      };
 
-    // Ejecutar la función para obtener los datos del usuario y los dispositivos
-    fetchUserData();
-  }, [navigate]);
+      fetchUserData();
+    } catch (error) {
+      console.error("Error al decodificar el token:", error);
+      navigate("/access-denied");
+    }
+  }, [idTecnico, navigate]);
 
-  // Manejar la selección de un dispositivo del dropdown
+  // Manejo del cambio de selección de dispositivo
   const handleDispositivoChange = (e) => {
     const dispositivoSeleccionado = e.target.value;
     console.log("Dispositivo seleccionado:", dispositivoSeleccionado);
-    navigate(`/infoDispositivos/${dispositivoSeleccionado}`); // Redirigir a la nueva página con la información del dispositivo seleccionado
+    navigate(`/infoDispositivos/${dispositivoSeleccionado}`);
   };
 
-  // Manejar el cierre de sesión
+  // Manejo de la acción de cerrar sesión
   const handleLogout = () => {
-    console.log("Cerrando sesión...");
-    localStorage.removeItem("token"); // Eliminar el token del localStorage
+    localStorage.removeItem("token"); // Eliminar el token
     navigate("/login"); // Redirigir al login
   };
 
   return (
     <div
       className="dashboard-tecnico"
-      style={{ backgroundImage: `url(${tecnicoBG})` }} // Establecer la imagen de fondo
+      style={{ backgroundImage: `url(${tecnicoBG})` }}
     >
       <header className="tecnico-header">
         <div className="logo-container">
-          <img src={tecnicoImageLeft} alt="Tecnico" className="tecnico-logo" /> {/* Imagen del técnico */}
+          <img src={tecnicoImageLeft} alt="Tecnico" className="tecnico-logo" />
         </div>
         <div className="tecnico-title-container">
-          <h1 className="tecnico-title">Bienvenido {nombreTecnico}</h1> {/* Mostrar el nombre del técnico */}
+          <h1 className="tecnico-title">Bienvenido {nombreTecnico}</h1>
         </div>
         <div className="logo-container">
-          <img src={alertaImageRight} alt="Alerta" className="tecnico-logo" /> {/* Imagen de alerta */}
+          <img src={alertaImageRight} alt="Alerta" className="tecnico-logo" />
         </div>
       </header>
-      
+
       <div className="tecnico-options">
         <select
           id="dispositivo-select"
           className="tecnico-select"
           onChange={handleDispositivoChange}
-          defaultValue="" // Valor por defecto vacío hasta que se seleccione un dispositivo
+          defaultValue=""
         >
           <option value="" disabled>
             Seleccionar dispositivo
           </option>
-          {/* Iterar sobre los dispositivos obtenidos y mostrarlos como opciones en el dropdown */}
           {dispositivos.map((dispositivo, index) => (
             <option key={index} value={dispositivo.id_dispositivo}>
               {dispositivo.id_dispositivo}

@@ -1,62 +1,77 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './DashboardPolicia.css';
-import policiaImageLeft from '../../assets/images/policia.jpg';  // Imagen a la izquierda
-import policiaImageRight from '../../assets/images/alertaPL.jpg'; // Imagen a la derecha
-import policiaBG from '../../assets/images/policiaBG.jpg';  // Imagen de fondo
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./DashboardPolicia.css";
+import policiaImageLeft from "../../assets/images/policia.jpg"; // Imagen a la izquierda
+import policiaImageRight from "../../assets/images/alertaPL.jpg"; // Imagen a la derecha
+import policiaBG from "../../assets/images/policiaBG.jpg"; // Imagen de fondo
+import { jwtDecode } from "jwt-decode";
 
-const DashboardPolicia = () => {
+const DashboardPolicia = ({ idPolicia }) => {
   const navigate = useNavigate();
-  const [nombrePolicia, setNombrePolicia] = useState('');  // Estado para almacenar el nombre
-  const [role, setRole] = useState('');
+  const [nombrePolicia, setNombrePolicia] = useState(""); // Estado para almacenar el nombre
 
   useEffect(() => {
-    const token = localStorage.getItem('token'); // Obtener el token JWT del localStorage
-
+    const token = localStorage.getItem("token");
     if (!token) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-
-    // Realizar la petición a la API para obtener el nombre del usuario
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch('/api/user', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`, // Enviar el token en el header
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setNombrePolicia(data.nombre);  // Guardar el nombre en el estado
-          setRole(data.role);  // Guardar el rol (opcional, por si se requiere en otras partes)
-        } else {
-          navigate('/login');
-        }
-      } catch (error) {
-        navigate('/login');
+    try {
+      const decodedToken = jwtDecode(token);
+      if (decodedToken.role !== "policia") {
+        navigate("/access-denied");
+        return;
       }
-    };
 
-    fetchUserData();
-  }, [navigate]);
+      // Función para obtener los datos del usuario desde la base de datos
+      const fetchUserData = async () => {
+        const token = localStorage.getItem("token"); // Obtener el token de localStorage
+        try {
+          const response = await fetch(
+            `http://localhost:4000/api/user?role=policia&id=${idPolicia}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: token, // Agregar el token en el encabezado
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            setNombrePolicia(data.nombre);
+          } else {
+            navigate("/login");
+          }
+        } catch (error) {
+          navigate("/login");
+        }
+      };
+
+      fetchUserData();
+    } catch (error) {
+      console.error("Error al decodificar el token:", error);
+      navigate("/access-denied");
+    }
+  }, [idPolicia, navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+    localStorage.removeItem("token"); // Eliminar el token
+    navigate("/login"); // Redirigir al login
   };
 
   return (
-    <div className="dashboard-policia" style={{ backgroundImage: `url(${policiaBG})` }}>
+    <div
+      className="dashboard-policia"
+      style={{ backgroundImage: `url(${policiaBG})` }}
+    >
       <header className="policia-header">
         <div className="logo-container">
           <img src={policiaImageLeft} alt="Policia" className="policia-logo" />
         </div>
         <div className="policia-title-container">
-          <h1 className="policia-title">Bienvenido {nombrePolicia}</h1>  {/* Mostrar el nombre dinámicamente */}
+          <h1 className="policia-title">Bienvenido {nombrePolicia}</h1>{" "}
+          {/* Mostrar el nombre dinámicamente */}
         </div>
         <div className="logo-container">
           <img src={policiaImageRight} alt="Alerta" className="policia-logo" />
@@ -66,7 +81,9 @@ const DashboardPolicia = () => {
         <button className="policia-button">Localizar Recluso</button>
         <button className="policia-button">Ver Alertas</button>
       </div>
-      <button className="logout-button" onClick={handleLogout}>Cerrar Sesión</button>
+      <button className="logout-button" onClick={handleLogout}>
+        Cerrar Sesión
+      </button>
     </div>
   );
 };
