@@ -4,7 +4,7 @@ import LoginComponent from "./pages/Login/LoginComponent.js";
 import DashboardPolicia from "./pages/Policia/DashboardPolicia.js";
 import DashboardTecnico from "./pages/Tecnico/DashboardTecnico.js";
 import DashboardAdmin from "./pages/Admin/DashboardAdmin.js";
-import InfoRecluso from "./pages/Dispositivos/infoDispositivos.js";
+import InfoDispositivo from "./pages/Dispositivos/infoDispositivos.js";
 import AccessDenied from "./pages/Denied/AccessDenied.js";
 import ProtectedRoute from "./components/ProtectedRoute.js";
 
@@ -44,7 +44,7 @@ function App() {
           path="/infoDispositivos/:id_dispositivo"
           element={
             <ProtectedRoute>
-              <InfoRecluso />
+              <InfoDispositivo />
             </ProtectedRoute>
           }
         />

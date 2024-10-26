@@ -1,46 +1,89 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import "./infoDispositivos.css";
 import tecnicoBG from "../../assets/images/tecnicoBG.jpg";
 
 const InfoDispositivo = () => {
-  const { id_dispositivo } = useParams();
+  const { id_dispositivo } = useParams(); // Obtener el ID del dispositivo desde los parámetros de la URL
   const navigate = useNavigate();
-  const [dispositivo, setDispositivo] = useState(null);
-
-  // ID del técnico desde localStorage (puedes adaptarlo si se guarda de otra forma)
-  const idTecnico = localStorage.getItem("id_tecnico");
+  const [dispositivo, setDispositivo] = useState(null); // Estado para almacenar los datos del dispositivo
 
   useEffect(() => {
-    const fetchDispositivoData = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:4000/api/dispositivos/${id_dispositivo}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+    const token = localStorage.getItem("token");
+    console.log("Token encontrado en localStorage:", token); // DEBUG: Verificar si el token está presente
 
-        if (response.ok) {
-          const data = await response.json();
-          setDispositivo(data);
-          console.log("Datos del dispositivo obtenidos:", data);
-        } else {
-          console.error("Error al obtener la información del dispositivo");
-        }
-      } catch (error) {
-        console.error("Error del servidor:", error);
+    // Verificación de la existencia del token
+    if (!token) {
+      console.warn("No se encontró token, redirigiendo a login."); // DEBUG
+      navigate("/login");
+      return;
+    }
+
+    try {
+      // Decodificación del token para verificar el rol
+      const decodedToken = jwtDecode(token);
+      console.log("Token decodificado:", decodedToken); // DEBUG: Mostrar el contenido del token decodificado
+
+      if (decodedToken.role !== "tecnico") {
+        console.warn("Rol no autorizado para acceder a este componente."); // DEBUG
+        navigate("/access-denied");
+        return;
       }
-    };
 
-    fetchDispositivoData();
-  }, [id_dispositivo]);
+      // Obtener la información del dispositivo
+      const fetchDispositivoData = async () => {
+        try {
+          console.log(
+            `Consultando la información del dispositivo ID: ${id_dispositivo}`
+          ); // DEBUG
+
+          const response = await fetch(
+            `http://localhost:4000/api/dispositivos/${id_dispositivo}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // Asegúrate de que el token esté en el formato correcto
+              },
+            }
+          );
+
+          console.log(
+            "Respuesta del servidor para /api/dispositivos/:id_dispositivo:",
+            response
+          ); // DEBUG
+
+          if (response.ok) {
+            const data = await response.json();
+            setDispositivo(data);
+            console.log("Datos del dispositivo obtenidos:", data); // DEBUG
+          } else {
+            console.error(
+              "Error al obtener la información del dispositivo:",
+              response.status
+            ); // DEBUG
+            navigate("/access-denied");
+          }
+        } catch (error) {
+          console.error(
+            "Error del servidor al obtener los datos del dispositivo:",
+            error
+          ); // DEBUG
+          navigate("/access-denied");
+        }
+      };
+
+      fetchDispositivoData();
+    } catch (error) {
+      console.error("Error al decodificar el token:", error); // DEBUG
+      localStorage.removeItem("token"); // Eliminar token inválido
+      navigate("/access-denied");
+    }
+  }, [id_dispositivo, navigate]);
 
   if (!dispositivo) {
-    return <div>Cargando...</div>;
+    return <div>Cargando...</div>; // Muestra un estado de carga mientras se obtienen los datos
   }
 
   const handleBack = () => {

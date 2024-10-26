@@ -6,16 +6,20 @@ const ProtectedRoute = ({ children }) => {
   const location = useLocation();
   const token = localStorage.getItem("token");
 
+  // Verificar si el token está presente
   if (!token) {
+    console.warn("No hay token, redirigiendo a /login."); // DEBUG
     return <Navigate to="/login" />;
   }
 
   try {
     const decodedToken = jwtDecode(token);
+    console.log("Token decodificado:", decodedToken); // DEBUG
 
     // Validación de expiración del token
     const currentTime = Date.now() / 1000;
     if (decodedToken.exp < currentTime) {
+      console.warn("Token expirado, redirigiendo a /access-denied."); // DEBUG
       localStorage.removeItem("token");
       return <Navigate to="/access-denied" />;
     }
@@ -24,11 +28,18 @@ const ProtectedRoute = ({ children }) => {
     const userRole = decodedToken.role;
     const path = location.pathname;
 
+    console.log("Rol del usuario:", userRole); // DEBUG
+    console.log("Ruta actual:", path); // DEBUG
+
+    // Actualiza aquí para permitir que el técnico acceda a infoDispositivos
     if (
-      (userRole === "tecnico" && !path.startsWith("/dashboard-tecnico")) ||
+      (userRole === "tecnico" &&
+        !path.startsWith("/dashboard-tecnico") &&
+        !path.startsWith("/infoDispositivos")) ||
       (userRole === "policia" && !path.startsWith("/dashboard-policia")) ||
       (userRole === "admin" && !path.startsWith("/dashboard-admin"))
     ) {
+      console.warn("Acceso denegado para el rol:", userRole); // DEBUG
       return <Navigate to="/access-denied" />;
     }
 
