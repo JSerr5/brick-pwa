@@ -34,7 +34,7 @@ El proyecto está desarrollado utilizando las siguientes tecnologías:
 1. **Clona el repositorio**:
 
     ```bash
-    git clone https://github.com/tuusuario/brick.git
+    git clone https://github.com/tuusuario/brick-pwa.git
     ```
 
 2. **Instala las dependencias** para el backend y el frontend:
@@ -57,7 +57,7 @@ El proyecto está desarrollado utilizando las siguientes tecnologías:
 
     - En el directorio `backend`:
         ```bash
-        npm start
+        node server.js
         ```
 
     - En el directorio `frontend`:
