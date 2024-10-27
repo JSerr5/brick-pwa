@@ -1,170 +1,228 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Alert from "../Alert/Alert.js";
 import "./GestionarPolicias.css";
+import adminBG from "../../assets/images/adminBG.jpg";
+import Alert from "../Alert/Alert";
 
 const GestionarPolicias = () => {
-  const [policias, setPolicias] = useState([]);
-  const [formData, setFormData] = useState({
-    nombre: "",
-    password: "",
-    cai_asignado: "",
-  });
-  const [editMode, setEditMode] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [policiaSeleccionado, setPoliciaSeleccionado] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [caiAsignado, setCaiAsignado] = useState("");
+  const [password, setPassword] = useState("");
+  const [policias, setPolicias] = useState([]);
+  const [error, setError] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
 
   const fetchPolicias = async () => {
+    const token = localStorage.getItem("token");
+
     try {
-      const response = await fetch("http://localhost:4000/api/policias");
-      const data = await response.json();
-      setPolicias(data);
+      const response = await fetch("http://localhost:4000/api/policias", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPolicias(data);
+      } else {
+        setError("Error al obtener los datos de policías.");
+        setShowAlert(true); // Muestra Alert
+      }
     } catch (error) {
-      setError("Error al obtener policías.");
+      setError("Error del servidor. Intenta más tarde.");
+      setShowAlert(true); // Muestra Alert
     }
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     fetchPolicias();
-  }, []);
+  }, [navigate]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleAdd = async (e) => {
-    e.preventDefault();
+  const handleAgregarPolicia = async () => {
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:4000/api/policias", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({ nombre, password, cai_asignado: caiAsignado }),
       });
-      if (!response.ok) {
+
+      if (response.ok) {
+        setError("");
+        setNombre("");
+        setCaiAsignado("");
+        setPassword("");
+        fetchPolicias();
+      } else {
         const errorData = await response.json();
-        setError(errorData.message || "Error al agregar policía.");
-        return;
+        setError(errorData.message || "Error al agregar policía");
+        setShowAlert(true); // Muestra Alert en caso de error
       }
-      fetchPolicias();
-      setFormData({ nombre: "", password: "", cai_asignado: "" });
-      setError("");
-    } catch {
-      setError("Error en el servidor al agregar policía.");
+    } catch (error) {
+      setError("Error al agregar policía");
+      setShowAlert(true); // Muestra Alert
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleActualizarPolicia = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/api/policias/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        setError("Error al eliminar policía.");
-        return;
-      }
-      fetchPolicias();
-      setError("");
-    } catch {
-      setError("Error en el servidor al eliminar policía.");
-    }
-  };
-
-  const handleEdit = (policia) => {
-    setFormData({
-      nombre: policia.nombre,
-      password: "",
-      cai_asignado: policia.cai_asignado,
-    });
-    setEditId(policia.id_policia);
-    setEditMode(true);
-  };
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    try {
+      const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:4000/api/policias/${editId}`,
+        `http://localhost:4000/api/policias/${policiaSeleccionado}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify({ nombre, password, cai_asignado: caiAsignado }),
         }
       );
-      if (!response.ok) {
-        setError("Error al actualizar policía.");
-        return;
+
+      if (response.ok) {
+        setError("");
+        fetchPolicias();
+        setNombre("");
+        setCaiAsignado("");
+        setPassword("");
+        setPoliciaSeleccionado("");
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Error al actualizar policía");
+        setShowAlert(true); // Muestra Alert
       }
-      fetchPolicias();
-      setFormData({ nombre: "", password: "", cai_asignado: "" });
-      setEditMode(false);
-      setError("");
-    } catch {
-      setError("Error en el servidor al actualizar policía.");
+    } catch (error) {
+      setError("Error al actualizar policía");
+      setShowAlert(true); // Muestra Alert
     }
+  };
+
+  const handleEliminarPolicia = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:4000/api/policias/${policiaSeleccionado}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setError("");
+        setPoliciaSeleccionado("");
+        setNombre("");
+        setCaiAsignado("");
+        setPassword("");
+        fetchPolicias();
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || "Error al eliminar policía");
+        setShowAlert(true); // Muestra Alert
+      }
+    } catch (error) {
+      setError("Error al eliminar policía");
+      setShowAlert(true); // Muestra Alert
+    }
+  };
+
+  const handlePoliciaChange = (id) => {
+    const policia = policias.find((p) => p.id_policia === id);
+    setPoliciaSeleccionado(id);
+    setNombre(policia ? policia.nombre : "");
+    setCaiAsignado(policia ? policia.cai_asignado : "");
+    setPassword("");
   };
 
   return (
-    <div className="gestionar-policias">
-      <h2>Gestionar Policías</h2>
-      {error && <Alert message={error} onClose={() => setError("")} />}
-      <form onSubmit={editMode ? handleUpdate : handleAdd}>
-        <select onChange={(e) => handleEdit(JSON.parse(e.target.value))}>
-          <option value="">Seleccionar Policía</option>
+    <div
+      className="gestionar-policias"
+      style={{ backgroundImage: `url(${adminBG})`, backgroundSize: "cover" }}
+    >
+      <div className="title-policia-container">
+        <h1 className="gestionar-titulo">Gestionar Policías</h1>
+      </div>
+      <div className="policia-form-container">
+        <select
+          className="policia-select full-width" // Añade la clase full-width
+          value={policiaSeleccionado}
+          onChange={(e) => handlePoliciaChange(e.target.value)}
+        >
+          <option value="">Seleccione un policía</option>
           {policias.map((policia) => (
-            <option key={policia.id_policia} value={JSON.stringify(policia)}>
+            <option key={policia.id_policia} value={policia.id_policia}>
               {policia.id_policia} - {policia.nombre}
             </option>
           ))}
         </select>
         <input
           type="text"
-          name="nombre"
           placeholder="Nombre"
-          value={formData.nombre}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          value={formData.password}
-          onChange={handleChange}
-          required={!editMode}
+          className="policia-input"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
         />
         <input
           type="text"
-          name="cai_asignado"
           placeholder="CAI Asignado"
-          value={formData.cai_asignado}
-          onChange={handleChange}
-          required
+          className="policia-input"
+          value={caiAsignado}
+          onChange={(e) => setCaiAsignado(e.target.value)}
         />
-        <div className="button-group">
+        <input
+          type="password"
+          placeholder="Contraseña"
+          className="policia-input"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <div className="policia-buttons equal-width">
           <button
-            type="submit"
-            className={editMode ? "update-button" : "add-button"}
+            className="policia-button actualizar"
+            onClick={handleActualizarPolicia}
           >
-            {editMode ? "Actualizar" : "Añadir"}
+            Actualizar
           </button>
-          {editMode && (
-            <button
-              type="button"
-              onClick={() => setEditMode(false)}
-              className="cancel-button"
-            >
-              Cancelar
-            </button>
-          )}
+          <button
+            className="policia-button eliminar"
+            onClick={handleEliminarPolicia}
+          >
+            Eliminar
+          </button>
+          <button
+            className="policia-button agregar full-width" // Clase full-width para el botón Añadir
+            onClick={handleAgregarPolicia}
+          >
+            Añadir
+          </button>
         </div>
-      </form>
+      </div>
       <button
         className="back-button"
         onClick={() => navigate("/dashboard-admin")}
       >
         Atrás
       </button>
+      {showAlert && (
+        <Alert message={error} onClose={() => setShowAlert(false)} />
+      )}{" "}
+      {/* Usa Alert */}
     </div>
   );
 };
