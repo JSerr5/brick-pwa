@@ -114,6 +114,40 @@
   font-weight: bold;
 }
 
+/* Contenedor de la contraseña con el botón de mostrar/ocultar */ 
+.gestionar-policia-password-container {
+  position: relative;
+  width: 100%; /* El contenedor ocupará todo el ancho */
+}
+
+.password-input {
+  width: 100%; /* Ocupará todo el ancho disponible */
+  padding-right: 40px; /* Espacio suficiente para el ícono */
+  padding-left: 15px;
+  height: 40px;
+
+  border-radius: 5px;
+  box-sizing: border-box; /* Incluir el padding dentro del ancho total */
+}
+
+.gestionar-policia-toggle-password-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-80%);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+}
+
+/* Eliminar el ícono de visibilidad por defecto del navegador */
+input[type="password"]::-ms-reveal, 
+input[type="password"]::-ms-clear, 
+input[type="password"]::-webkit-clear-button, 
+input[type="password"]::-webkit-reveal-button {
+    display: none;
+}
+
 /* Media Query para pantallas móviles */
 @media (max-width: 600px) {
   .gestionar-titulo {

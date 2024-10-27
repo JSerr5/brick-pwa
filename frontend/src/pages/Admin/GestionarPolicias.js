@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./GestionarPolicias.css";
 import adminBG from "../../assets/images/adminBG.jpg";
 import Alert from "../Alert/Alert";
+import showIcon from "../../assets/images/show-icon.png";
+import hideIcon from "../../assets/images/hide-icon.png";
 
 const GestionarPolicias = () => {
   const navigate = useNavigate();
@@ -11,8 +13,10 @@ const GestionarPolicias = () => {
   const [caiAsignado, setCaiAsignado] = useState("");
   const [password, setPassword] = useState("");
   const [policias, setPolicias] = useState([]);
-  const [error, setError] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const fetchPolicias = async () => {
     const token = localStorage.getItem("token");
@@ -28,11 +32,11 @@ const GestionarPolicias = () => {
         const data = await response.json();
         setPolicias(data);
       } else {
-        setError("Error al obtener los datos de policías.");
+        setAlertMessage("Error al obtener los datos de policías.");
         setShowAlert(true); // Muestra Alert
       }
     } catch (error) {
-      setError("Error del servidor. Intenta más tarde.");
+      setAlertMessage("Error del servidor. Intenta más tarde.");
       setShowAlert(true); // Muestra Alert
     }
   };
@@ -49,6 +53,10 @@ const GestionarPolicias = () => {
   }, [navigate]);
 
   const handleAgregarPolicia = async () => {
+    if (isEditMode) return;
+    setAlertMessage("");
+    setShowAlert(false);
+
     try {
       const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:4000/api/policias", {
@@ -61,19 +69,20 @@ const GestionarPolicias = () => {
       });
 
       if (response.ok) {
-        setError("");
         setNombre("");
         setCaiAsignado("");
         setPassword("");
         fetchPolicias();
+        setAlertMessage("Policía agregado correctamente");
+        setShowAlert(true);
       } else {
         const errorData = await response.json();
-        setError(errorData.message || "Error al agregar policía");
-        setShowAlert(true); // Muestra Alert en caso de error
+        setAlertMessage(errorData.message || "Error al agregar policía");
+        setShowAlert(true);
       }
     } catch (error) {
-      setError("Error al agregar policía");
-      setShowAlert(true); // Muestra Alert
+      setAlertMessage("Error al agregar policía");
+      setShowAlert(true);
     }
   };
 
@@ -93,19 +102,20 @@ const GestionarPolicias = () => {
       );
 
       if (response.ok) {
-        setError("");
         fetchPolicias();
         setNombre("");
         setCaiAsignado("");
         setPassword("");
         setPoliciaSeleccionado("");
+        setAlertMessage("Policía actualizado correctamente");
+        setShowAlert(true); // Muestra mensaje de éxito
       } else {
         const errorData = await response.json();
-        setError(errorData.message || "Error al actualizar policía");
-        setShowAlert(true); // Muestra Alert
+        setAlertMessage(errorData.message || "Error al actualizar policía");
+        setShowAlert(true); // Muestra Alert en caso de error
       }
     } catch (error) {
-      setError("Error al actualizar policía");
+      setAlertMessage("Error al actualizar policía");
       setShowAlert(true); // Muestra Alert
     }
   };
@@ -125,19 +135,20 @@ const GestionarPolicias = () => {
       );
 
       if (response.ok) {
-        setError("");
         setPoliciaSeleccionado("");
         setNombre("");
         setCaiAsignado("");
         setPassword("");
         fetchPolicias();
+        setAlertMessage("Policía eliminado correctamente");
+        setShowAlert(true); // Muestra mensaje de éxito
       } else {
         const errorData = await response.json();
-        setError(errorData.message || "Error al eliminar policía");
-        setShowAlert(true); // Muestra Alert
+        setAlertMessage(errorData.message || "Error al eliminar policía");
+        setShowAlert(true); // Muestra Alert en caso de error
       }
     } catch (error) {
-      setError("Error al eliminar policía");
+      setAlertMessage("Error al eliminar policía");
       setShowAlert(true); // Muestra Alert
     }
   };
@@ -148,6 +159,7 @@ const GestionarPolicias = () => {
     setNombre(policia ? policia.nombre : "");
     setCaiAsignado(policia ? policia.cai_asignado : "");
     setPassword("");
+    setIsEditMode(!!id);
   };
 
   return (
@@ -160,7 +172,7 @@ const GestionarPolicias = () => {
       </div>
       <div className="policia-form-container">
         <select
-          className="policia-select full-width" // Añade la clase full-width
+          className="policia-select full-width"
           value={policiaSeleccionado}
           onChange={(e) => handlePoliciaChange(e.target.value)}
         >
@@ -185,29 +197,40 @@ const GestionarPolicias = () => {
           value={caiAsignado}
           onChange={(e) => setCaiAsignado(e.target.value)}
         />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          className="policia-input"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div className="gestionar-policia-password-container">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Contraseña"
+            className="policia-input password-input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <img
+            src={showPassword ? hideIcon : showIcon} // Icono de ojo abierto o cerrado
+            alt="Toggle Password Visibility"
+            className="gestionar-policia-toggle-password-icon"
+            onClick={() => setShowPassword(!showPassword)}
+          />
+        </div>
         <div className="policia-buttons equal-width">
           <button
             className="policia-button actualizar"
             onClick={handleActualizarPolicia}
+            disabled={!isEditMode}
           >
             Actualizar
           </button>
           <button
             className="policia-button eliminar"
             onClick={handleEliminarPolicia}
+            disabled={!isEditMode}
           >
             Eliminar
           </button>
           <button
-            className="policia-button agregar full-width" // Clase full-width para el botón Añadir
+            className="policia-button agregar full-width"
             onClick={handleAgregarPolicia}
+            disabled={isEditMode}
           >
             Añadir
           </button>
@@ -220,9 +243,14 @@ const GestionarPolicias = () => {
         Atrás
       </button>
       {showAlert && (
-        <Alert message={error} onClose={() => setShowAlert(false)} />
-      )}{" "}
-      {/* Usa Alert */}
+        <Alert
+          message={alertMessage}
+          onClose={() => {
+            setShowAlert(false);
+            setAlertMessage("");
+          }}
+        />
+      )}
     </div>
   );
 };
