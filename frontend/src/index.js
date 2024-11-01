@@ -11,20 +11,27 @@ root.render(
   </React.StrictMode>
 );
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then((registration) => {
-        console.log("Service Worker registrado con éxito:", registration);
-      })
-      .catch((error) => {
-        console.error("Error al registrar el Service Worker:", error);
-      });
-  });
+// Registrar Service Worker para la PWA
+if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") {
+  navigator.serviceWorker
+    .register("/service-worker.js")
+    .then((registration) => {
+      registration.onupdatefound = () => {
+        const installingWorker = registration.installing;
+        installingWorker.onstatechange = () => {
+          if (
+            installingWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+            console.log("Nueva versión disponible. Recarga para actualizar.");
+          }
+        };
+      };
+    })
+    .catch((error) => {
+      console.error("Error al registrar el Service Worker:", error);
+    });
 }
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+// Opcional: Medición de rendimiento
 reportWebVitals();

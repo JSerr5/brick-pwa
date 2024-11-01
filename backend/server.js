@@ -30,9 +30,21 @@ const pool = mysql.createPool({
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuración de CORS para permitir solo el frontend local
-const allowedOrigins = ["http://localhost:3000"];
-app.use(cors({ origin: allowedOrigins }));
+// Configuración de CORS para permitir solo el frontend local en HTTP y HTTPS
+const allowedOrigins = ["http://localhost:3000", "https://localhost:3443"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Permite solicitudes desde los orígenes especificados o desde un origen nulo (por ejemplo, para pruebas locales sin origen)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Origen no permitido por CORS"));
+      }
+    },
+    credentials: true, // Permite el uso de cookies y credenciales
+  })
+);
 
 // -------------------- Rutas de la API --------------------
 
@@ -42,7 +54,9 @@ app.post("/api/login", async (req, res) => {
 
   if (!username || !password) {
     console.log("Faltan campos de usuario o contraseña");
-    return res.status(400).json({ message: "Faltan campos de usuario o contraseña" });
+    return res
+      .status(400)
+      .json({ message: "Faltan campos de usuario o contraseña" });
   }
 
   try {
@@ -53,13 +67,21 @@ app.post("/api/login", async (req, res) => {
     // Determinar la tabla y el rol según el prefijo del username
     if (username.startsWith("p")) {
       role = "policia";
-      userQuery = await pool.query("SELECT * FROM policias WHERE id_policia = ?", [username]);
+      userQuery = await pool.query(
+        "SELECT * FROM policias WHERE id_policia = ?",
+        [username]
+      );
     } else if (username.startsWith("t")) {
       role = "tecnico";
-      userQuery = await pool.query("SELECT * FROM tecnicos WHERE id_tecnico = ?", [username]);
+      userQuery = await pool.query(
+        "SELECT * FROM tecnicos WHERE id_tecnico = ?",
+        [username]
+      );
     } else if (username === "admin") {
       role = "admin";
-      userQuery = await pool.query("SELECT * FROM admins WHERE username = ?", [username]);
+      userQuery = await pool.query("SELECT * FROM admins WHERE username = ?", [
+        username,
+      ]);
     } else {
       return res.status(400).json({ message: "Rol no reconocido" });
     }
@@ -77,8 +99,15 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ message: "Credenciales incorrectas" });
     }
 
-    const token = generateToken({ id: user.id || user.id_tecnico || user.id_policia, role });
-    return res.json({ token, role, id: user.id || user.id_tecnico || user.id_policia });
+    const token = generateToken({
+      id: user.id || user.id_tecnico || user.id_policia,
+      role,
+    });
+    return res.json({
+      token,
+      role,
+      id: user.id || user.id_tecnico || user.id_policia,
+    });
   } catch (error) {
     console.error("Error del servidor en /api/login:", error);
     return res.status(500).json({ message: "Error del servidor" });
@@ -94,11 +123,19 @@ app.get("/api/user", verifyToken, async (req, res) => {
     let userQuery;
 
     if (role === "policia") {
-      userQuery = await pool.query("SELECT nombre FROM policias WHERE id_policia = ?", [id]);
+      userQuery = await pool.query(
+        "SELECT nombre FROM policias WHERE id_policia = ?",
+        [id]
+      );
     } else if (role === "tecnico") {
-      userQuery = await pool.query("SELECT nombre FROM tecnicos WHERE id_tecnico = ?", [id]);
+      userQuery = await pool.query(
+        "SELECT nombre FROM tecnicos WHERE id_tecnico = ?",
+        [id]
+      );
     } else if (role === "admin") {
-      userQuery = await pool.query("SELECT nombre FROM admins WHERE id = ?", [id]);
+      userQuery = await pool.query("SELECT nombre FROM admins WHERE id = ?", [
+        id,
+      ]);
     } else {
       return res.status(400).json({ message: "Rol no reconocido" });
     }
@@ -127,8 +164,12 @@ app.get("/api/admin/data", verifyToken, async (req, res) => {
       return res.status(403).json({ message: "Acceso denegado" });
     }
 
-    const [tecnicos] = await pool.query("SELECT id_tecnico, nombre FROM tecnicos");
-    const [policias] = await pool.query("SELECT id_policia, nombre FROM policias");
+    const [tecnicos] = await pool.query(
+      "SELECT id_tecnico, nombre FROM tecnicos"
+    );
+    const [policias] = await pool.query(
+      "SELECT id_policia, nombre FROM policias"
+    );
 
     console.log("Datos obtenidos para admin");
 
@@ -175,11 +216,9 @@ app.post(
           lastTechnician[0].id_tecnico.replace("t", "")
         );
         if (lastIdNumber >= MAX_ID_NUMBER) {
-          return res
-            .status(400)
-            .json({
-              message: "Se ha alcanzado el límite máximo de IDs para técnicos.",
-            });
+          return res.status(400).json({
+            message: "Se ha alcanzado el límite máximo de IDs para técnicos.",
+          });
         }
         newId = `t${lastIdNumber + 1}`;
       } else {

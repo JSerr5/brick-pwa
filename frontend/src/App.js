@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import LoginComponent from "./pages/Login/LoginComponent.js";
 import DashboardPolicia from "./pages/Policia/DashboardPolicia.js";
@@ -11,6 +11,13 @@ import GestionarTecnicos from "./pages/Admin/GestionarTecnicos";
 import GestionarPolicias from "./pages/Admin/GestionarPolicias";
 
 function App() {
+  const [apiData, setApiData] = useState(null);
+
+  // Llamada a la API al cargar la aplicación
+  useEffect(() => {
+    const apiUrl = process.env.REACT_APP_API_URL;
+  }, []);
+
   return (
     <Router>
       <Routes>
