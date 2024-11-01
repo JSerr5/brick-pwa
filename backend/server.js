@@ -427,9 +427,7 @@ app.get("/api/dispositivos", async (req, res) => {
 
     if (!dispositivos.length) {
       console.log("No se encontraron dispositivos");
-      return res
-        .status(404)
-        .json({ message: "No se encontraron dispositivos" });
+      return res.status(200).json([]);
     }
 
     // Enviar la lista de dispositivos al frontend

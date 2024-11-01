@@ -1,0 +1,12 @@
+.gestionar-dispositivos {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .gestionar-dispositivos h2 {
+    text-align: center;
+  }
+  

@@ -9,6 +9,7 @@ import AccessDenied from "./pages/Denied/AccessDenied.js";
 import ProtectedRoute from "./components/ProtectedRoute.js";
 import GestionarTecnicos from "./pages/Admin/GestionarTecnicos";
 import GestionarPolicias from "./pages/Admin/GestionarPolicias";
+import GestionarDispositivos from "./pages/Tecnico/GestionarDispositivos";
 
 function App() {
   const [apiData, setApiData] = useState(null);
@@ -72,6 +73,16 @@ function App() {
           element={
             <ProtectedRoute>
               <GestionarPolicias />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas de CRUD para Dispositivos en Tecnicos */}
+        <Route
+          path="/gestionar-dispositivos"
+          element={
+            <ProtectedRoute>
+              <GestionarDispositivos />
             </ProtectedRoute>
           }
         />

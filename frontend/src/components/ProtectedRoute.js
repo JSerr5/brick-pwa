@@ -34,6 +34,7 @@ const ProtectedRoute = ({ children }) => {
     if (
       (userRole === "tecnico" &&
         !path.startsWith("/dashboard-tecnico") &&
+        !path.startsWith("/gestionar-dispositivos") &&
         !path.startsWith("/infoDispositivos")) ||
       (userRole === "policia" && !path.startsWith("/dashboard-policia")) ||
       (userRole === "admin" &&
@@ -44,7 +45,6 @@ const ProtectedRoute = ({ children }) => {
       console.warn(`Acceso denegado para el rol: ${userRole}`);
       return <Navigate to="/access-denied" />;
     }
-    
 
     return children;
   } catch (error) {
