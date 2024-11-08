@@ -53,7 +53,7 @@ app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    console.log("Faltan campos de usuario o contraseña");
+    // *console.log("Faltan campos de usuario o contraseña");
     return res
       .status(400)
       .json({ message: "Faltan campos de usuario o contraseña" });
@@ -89,13 +89,13 @@ app.post("/api/login", async (req, res) => {
     user = userQuery[0][0];
 
     if (!user) {
-      console.log("Credenciales incorrectas");
+      // *console.log("Credenciales incorrectas");
       return res.status(400).json({ message: "Credenciales incorrectas" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      console.log("Contraseña incorrecta");
+      // *console.log("Contraseña incorrecta");
       return res.status(400).json({ message: "Credenciales incorrectas" });
     }
 
@@ -116,7 +116,7 @@ app.post("/api/login", async (req, res) => {
 
 // Ruta para obtener los datos del usuario autenticado
 app.get("/api/user", verifyToken, async (req, res) => {
-  console.log("Ruta /api/user alcanzada");
+  // *console.log("Ruta /api/user alcanzada");
 
   try {
     const { userRole: role, userId: id } = req;
@@ -145,7 +145,7 @@ app.get("/api/user", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    console.log("Datos del usuario:", user);
+    // *console.log("Datos del usuario:", user);
     return res.json({ nombre: user.nombre, role });
   } catch (error) {
     console.error("Error en /api/user:", error);
@@ -155,7 +155,7 @@ app.get("/api/user", verifyToken, async (req, res) => {
 
 // Ruta para obtener datos específicos de admin
 app.get("/api/admin/data", verifyToken, async (req, res) => {
-  console.log("Ruta /api/admin/data alcanzada");
+  // *console.log("Ruta /api/admin/data alcanzada");
 
   try {
     const { userRole: role } = req;
@@ -171,7 +171,7 @@ app.get("/api/admin/data", verifyToken, async (req, res) => {
       "SELECT id_policia, nombre FROM policias"
     );
 
-    console.log("Datos obtenidos para admin");
+    // *console.log("Datos obtenidos para admin");
 
     return res.json({
       tecnicos,
@@ -417,20 +417,28 @@ app.delete("/api/policias/:id", async (req, res) => {
 
 // -------------------- Rutas para manejar dispositivos --------------------
 
-// Ruta para obtener la lista de dispositivos
+// Ruta para obtener la lista de dispositivos y verificar si necesitan revisión
 app.get("/api/dispositivos", async (req, res) => {
   try {
     const dispositivosQuery = await pool.query(
-      "SELECT id_dispositivo FROM dispositivos"
+      "SELECT id_dispositivo, revisado, date_revisado FROM dispositivos"
     );
     const dispositivos = dispositivosQuery[0];
+    const currentDate = new Date();
 
-    if (!dispositivos.length) {
-      console.log("No se encontraron dispositivos");
-      return res.status(200).json([]);
-    }
+    // Revisar cada dispositivo para ver si la fecha de revisión es anterior a hoy
+    dispositivos.forEach((dispositivo) => {
+      const reviewDate = new Date(dispositivo.date_revisado);
+      if (reviewDate < currentDate) {
+        // Si la fecha es anterior a hoy, marcar como no revisado y establecer needsReview
+        dispositivo.revisado = 0;
+        dispositivo.needsReview = true;
+      } else {
+        dispositivo.needsReview = false;
+      }
+    });
 
-    // Enviar la lista de dispositivos al frontend
+    // Enviar la lista de dispositivos al frontend con el campo needsReview actualizado
     return res.json(dispositivos);
   } catch (error) {
     console.error("Error al obtener los dispositivos:", error);
@@ -451,7 +459,7 @@ app.get("/api/dispositivos/:id_dispositivo", async (req, res) => {
     const dispositivo = dispositivoQuery[0][0];
 
     if (!dispositivo) {
-      console.log("Dispositivo no encontrado");
+      // *console.log("Dispositivo no encontrado");
       return res.status(404).json({ message: "Dispositivo no encontrado" });
     }
 
@@ -467,7 +475,7 @@ app.get("/api/dispositivos/:id_dispositivo", async (req, res) => {
 
 // Rutas de API no encontradas
 app.use("/api/*", (req, res) => {
-  console.log("Recurso API no encontrado:", req.originalUrl);
+  // *console.log("Recurso API no encontrado:", req.originalUrl);
   return res.status(404).json({ message: "Recurso API no encontrado" });
 });
 
@@ -476,12 +484,12 @@ app.use(express.static(path.join(__dirname, "frontend/build")));
 
 // Redirigir cualquier ruta no gestionada al frontend (React)
 app.get("*", (req, res) => {
-  console.log("Redirigiendo a React para la ruta:", req.originalUrl);
+  // *console.log("Redirigiendo a React para la ruta:", req.originalUrl);
   res.sendFile(path.join(__dirname, "frontend/build", "index.html"));
 });
 
 // -------------------- Iniciar el servidor --------------------
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  // *console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

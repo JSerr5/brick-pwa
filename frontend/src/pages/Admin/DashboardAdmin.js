@@ -92,12 +92,6 @@ const DashboardAdmin = () => {
         >
           Gestionar Policías
         </button>
-        <button
-          className="admin-button"
-          onClick={() => navigate("/gestionar-admin")}
-        >
-          Gestionar Admin
-        </button>
       </div>
 
       {error && <p className="error-message">{error}</p>}

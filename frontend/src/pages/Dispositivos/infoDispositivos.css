@@ -88,3 +88,21 @@
 .back-button:hover {
   background-color: #555555;
 }
+
+.revisar-button {
+  align-self: center;
+  margin-top: 10px;
+  padding: 15px 25px;
+  font-size: 1rem;
+  color: #ffffff;
+  background-color: #f80000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease;
+}
+
+.revisar-button:hover {
+  background-color: #ad0000;
+}

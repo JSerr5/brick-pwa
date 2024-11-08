@@ -9,7 +9,7 @@ import AccessDenied from "./pages/Denied/AccessDenied.js";
 import ProtectedRoute from "./components/ProtectedRoute.js";
 import GestionarTecnicos from "./pages/Admin/GestionarTecnicos";
 import GestionarPolicias from "./pages/Admin/GestionarPolicias";
-import GestionarDispositivos from "./pages/Tecnico/GestionarDispositivos";
+import GestionarDispositivos from "./pages/Dispositivos/GestionarDispositivos";
 
 function App() {
   const [apiData, setApiData] = useState(null);

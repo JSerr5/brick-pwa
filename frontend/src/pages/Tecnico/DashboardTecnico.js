@@ -1,98 +1,83 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import Alert from "../Alert/Alert"; // Importa el componente Alert
 import "./DashboardTecnico.css";
-import tecnicoImageLeft from "../../assets/images/tecnico.jpg"; // Imagen a la izquierda
-import alertaImageRight from "../../assets/images/alertaTC.jpg"; // Imagen a la derecha
-import tecnicoBG from "../../assets/images/tecnicoBG.jpg"; // Imagen de fondo
+import tecnicoImageLeft from "../../assets/images/tecnico.jpg";
+import alertaImageRight from "../../assets/images/alertaTC.jpg";
+import tecnicoBG from "../../assets/images/tecnicoBG.jpg";
 
 const DashboardTecnico = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search); // Obtener los parámetros de la URL
+  const queryParams = new URLSearchParams(location.search);
   const idTecnico = queryParams.get("id") || localStorage.getItem("idTecnico");
 
-  const [nombreTecnico, setNombreTecnico] = useState(""); // Estado para almacenar el nombre del técnico
-  const [dispositivos, setDispositivos] = useState([]); // Estado para almacenar la lista de dispositivos
+  const [nombreTecnico, setNombreTecnico] = useState("");
+  const [dispositivos, setDispositivos] = useState([]);
+  const [showAlert, setShowAlert] = useState(false); // Estado para controlar la alerta
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    // Verificación de la existencia del token
     if (!token) {
       navigate("/login");
       return;
     }
 
     try {
-      // Decodificación del token para verificar el rol
       const decodedToken = jwtDecode(token);
       if (decodedToken.role !== "tecnico") {
         navigate("/access-denied");
         return;
       }
 
-      // Función para obtener los datos del usuario técnico y los dispositivos directamente desde la base de datos
       const fetchUserData = async () => {
         try {
-          console.log(`Consultando los datos del técnico con ID: ${idTecnico}`);
-
-          // Realizamos la consulta al servidor para obtener los datos del técnico con el ID dinámico
           const response = await fetch(
             `http://localhost:4000/api/user?role=tecnico&id=${idTecnico}`,
             {
               headers: {
                 "Content-Type": "application/json",
-                Authorization: token, // Agregar el token en el encabezado
+                Authorization: token,
               },
             }
           );
-          console.log("Respuesta del servidor para /api/user:", response);
 
           if (response.ok) {
-            const contentType = response.headers.get("content-type");
+            const data = await response.json();
+            setNombreTecnico(data.nombre);
 
-            if (contentType && contentType.includes("application/json")) {
-              const data = await response.json();
-              setNombreTecnico(data.nombre);
-              console.log("Nombre del técnico obtenido:", data.nombre);
-
-              // Después de obtener los datos del usuario, obtener la lista de dispositivos
-              const dispositivosResponse = await fetch(
-                "http://localhost:4000/api/dispositivos",
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                }
-              );
-
-              console.log(
-                "Respuesta del servidor para /api/dispositivos:",
-                dispositivosResponse
-              );
-
-              if (dispositivosResponse.ok) {
-                const dispositivosData = await dispositivosResponse.json();
-                setDispositivos(dispositivosData); // Almacenar los dispositivos en el estado
-                console.log("Dispositivos obtenidos:", dispositivosData);
-              } else {
-                console.log("Error al obtener dispositivos.");
-                navigate("/login");
+            // Obtener la lista de dispositivos
+            const dispositivosResponse = await fetch(
+              "http://localhost:4000/api/dispositivos",
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
               }
+            );
+
+            if (dispositivosResponse.ok) {
+              const dispositivosData = await dispositivosResponse.json();
+
+              // Ordenar dispositivos: los que necesitan revisión primero
+              const sortedDevices = dispositivosData.sort(
+                (a, b) => b.needsReview - a.needsReview
+              );
+              setDispositivos(sortedDevices);
+
+              // Verificar si hay algún dispositivo que necesite revisión
+              const needsReview = sortedDevices.some(
+                (device) => device.needsReview
+              );
+              setShowAlert(needsReview); // Mostrar la alerta si hay dispositivos a revisar
             } else {
-              // La respuesta no es JSON
-              const textResponse = await response.text();
-              console.error("La respuesta no es JSON:", textResponse);
+              console.log("Error al obtener dispositivos.");
               navigate("/login");
             }
           } else {
-            console.log(
-              "Error al obtener datos del usuario:",
-              response.status,
-              response.statusText
-            );
             navigate("/login");
           }
         } catch (error) {
@@ -108,17 +93,14 @@ const DashboardTecnico = () => {
     }
   }, [idTecnico, navigate]);
 
-  // Manejo del cambio de selección de dispositivo
   const handleDispositivoChange = (e) => {
     const dispositivoSeleccionado = e.target.value;
-    console.log("Dispositivo seleccionado:", dispositivoSeleccionado);
     navigate(`/infoDispositivos/${dispositivoSeleccionado}`);
   };
 
-  // Manejo de la acción de cerrar sesión
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Eliminar el token
-    navigate("/login"); // Redirigir al login
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
@@ -149,8 +131,13 @@ const DashboardTecnico = () => {
             Seleccionar dispositivo
           </option>
           {dispositivos.map((dispositivo, index) => (
-            <option key={index} value={dispositivo.id_dispositivo}>
+            <option
+              key={index}
+              value={dispositivo.id_dispositivo}
+              className={dispositivo.needsReview ? "needs-review-option" : ""}
+            >
               {dispositivo.id_dispositivo}
+              {dispositivo.needsReview ? " - Necesita revisión" : ""}
             </option>
           ))}
         </select>
@@ -159,6 +146,14 @@ const DashboardTecnico = () => {
       <button className="logout-button" onClick={handleLogout}>
         Cerrar Sesión
       </button>
+
+      {/* Mostrar alerta si hay dispositivos que necesitan revisión */}
+      {showAlert && (
+        <Alert
+          message="Alerta! Hay dispositivos que necesitan una revisión"
+          onClose={() => setShowAlert(false)}
+        />
+      )}
     </div>
   );
 };

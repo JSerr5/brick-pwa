@@ -138,14 +138,30 @@ const InfoDispositivo = () => {
           </tr>
           <tr>
             <td>Revisado</td>
-            <td>{dispositivo.revisado === 1 ? "Sí" : "No"}</td>
+            <td>{dispositivo.revisado === 1 ? "Revisado" : "No revisado"}</td>
+          </tr>
+          <tr>
+            <td>Fecha de Revisión</td>
+            <td>{new Date(dispositivo.date_revisado).toLocaleDateString()}</td>
           </tr>
           <tr>
             <td>Dentro del Rango</td>
-            <td>{dispositivo.in_range === 1 ? "Sí" : "No"}</td>
+            <td>
+              {dispositivo.in_range === 1
+                ? "Dentro del rango"
+                : "Fuera de rango"}
+            </td>
           </tr>
         </tbody>
       </table>
+      {dispositivo.revisado === 0 && (
+        <button
+          onClick={() => navigate("/gestionar-dispositivos")}
+          className="revisar-button"
+        >
+          Revisar Dispositivo
+        </button>
+      )}
       <button onClick={handleBack} className="back-button">
         Atrás
       </button>

@@ -121,3 +121,8 @@
     padding: 8px 16px;
   }
 }
+
+.needs-review-option {
+  color: red;
+  font-weight: bold;
+}
