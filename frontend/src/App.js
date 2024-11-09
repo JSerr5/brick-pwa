@@ -38,7 +38,7 @@ function App() {
         />
 
         <Route
-          path="/ubicar/:lat/:lng"
+          path="/ubicar/:lat/:lng/:id_dispositivo"
           element={
             <ProtectedRoute>
               <UbicarMapa />

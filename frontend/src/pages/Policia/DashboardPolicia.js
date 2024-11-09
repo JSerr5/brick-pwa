@@ -105,7 +105,7 @@ const DashboardPolicia = ({ idPolicia }) => {
         </div>
       </header>
       <div className="policia-options">
-        <button className="policia-button">Localizar Recluso</button>
+        <button className="policia-button">Ver Reclusos</button>
         <button
           className={`policia-button ${
             alertas.length > 0 ? "alerta-activa" : ""
@@ -143,9 +143,12 @@ const DashboardPolicia = ({ idPolicia }) => {
                     </p>
                     <button
                       className="modal-ubicar-button"
-                      onClick={() =>
-                        navigate(`/ubicar/${alerta.latitud}/${alerta.longitud}`)
-                      }
+                      onClick={() => {
+                        //console.log(`Navegando a /ubicar/${alerta.latitud}/${alerta.longitud}/${alerta.id_dispositivo}`);
+                        navigate(
+                          `/ubicar/${alerta.latitud}/${alerta.longitud}/${alerta.id_dispositivo}`
+                        );
+                      }}
                     >
                       Ubicar
                     </button>

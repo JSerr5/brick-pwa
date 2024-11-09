@@ -578,7 +578,7 @@ app.delete("/api/dispositivos/:id_dispositivo", async (req, res) => {
 // -------------------- Rutas para alertas de los dispositivos --------------------
 
 // Endpoint para obtener alertas activas (dispositivos fuera de rango)
-app.get('/api/alertas', async (req, res) => {
+app.get("/api/alertas", async (req, res) => {
   try {
     // Consulta a la base de datos para obtener dispositivos con in_range = 0
     const [alertas] = await pool.query(`
@@ -592,6 +592,36 @@ app.get('/api/alertas', async (req, res) => {
   } catch (error) {
     console.error("Error al obtener alertas activas:", error);
     res.status(500).json({ error: "Error al obtener alertas" });
+  }
+});
+
+// -------------------- Rutas para obtener datos de los reclusos --------------------
+
+// Ruta para obtener la información de un recluso por ID de dispositivo
+app.get("/api/recluso/dispositivo/:id_dispositivo", async (req, res) => {
+  const { id_dispositivo } = req.params;
+  console.log("ID del dispositivo recibido:", id_dispositivo);
+  try {
+    const dispositivoQuery = await pool.query(
+      `SELECT d.id_dispositivo, d.latitud, d.longitud, d.date_revisado, d.revisado,
+              r.nombre AS recluso_nombre, r.direccion, r.descripcion
+       FROM dispositivos d
+       JOIN reclusos r ON r.dispositivo_asignado = d.id_dispositivo
+       WHERE d.id_dispositivo = ?`,
+      [id_dispositivo]
+    );
+
+    const dispositivo = dispositivoQuery[0][0];
+    console.log("Resultado de la consulta:", dispositivo);
+
+    if (!dispositivo) {
+      return res.status(404).json({ message: "Dispositivo no encontrado o sin recluso asignado" });
+    }
+
+    res.json(dispositivo);
+  } catch (error) {
+    console.error("Error al obtener la información del recluso y dispositivo:", error);
+    res.status(500).json({ message: "Error en el servidor al obtener el dispositivo" });
   }
 });
 
