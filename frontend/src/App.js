@@ -11,6 +11,7 @@ import GestionarTecnicos from "./pages/Admin/GestionarTecnicos";
 import GestionarPolicias from "./pages/Admin/GestionarPolicias";
 import GestionarDispositivos from "./pages/Dispositivos/GestionarDispositivos";
 import CrudDispositivos from "./pages/Dispositivos/CrudDispositivos";
+import UbicarMapa from "./pages/Policia/UbicarMapa";
 
 function App() {
   const [apiData, setApiData] = useState(null);
@@ -35,6 +36,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/ubicar/:lat/:lng"
+          element={
+            <ProtectedRoute>
+              <UbicarMapa />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/dashboard-tecnico"
           element={

@@ -31,18 +31,22 @@ const ProtectedRoute = ({ children }) => {
     console.log("Rol del usuario:", userRole); // DEBUG
     console.log("Ruta actual:", path); // DEBUG
 
-    if (
-      (userRole === "tecnico" &&
-        !path.startsWith("/dashboard-tecnico") &&
-        !path.startsWith("/gestionar-dispositivos") &&
-        !path.startsWith("/crud-dispositivos") &&
-        !path.startsWith("/infoDispositivos")) ||
-      (userRole === "policia" && !path.startsWith("/dashboard-policia")) ||
-      (userRole === "admin" &&
-        !path.startsWith("/dashboard-admin") &&
-        !path.startsWith("/gestionar-tecnicos") &&
-        !path.startsWith("/gestionar-policias"))
-    ) {
+    const rolePaths = {
+      tecnico: [
+        "/dashboard-tecnico",
+        "/gestionar-dispositivos",
+        "/crud-dispositivos",
+        "/infoDispositivos",
+      ],
+      policia: ["/dashboard-policia", "/ubicar"],
+      admin: ["/dashboard-admin", "/gestionar-tecnicos", "/gestionar-policias"],
+    };
+
+    const isAuthorized = rolePaths[userRole]?.some((allowedPath) =>
+      path.startsWith(allowedPath)
+    );
+
+    if (!isAuthorized) {
       console.warn(`Acceso denegado para el rol: ${userRole}`);
       return <Navigate to="/access-denied" />;
     }

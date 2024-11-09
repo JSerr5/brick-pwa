@@ -152,25 +152,129 @@
 
 /* Estilos para el contenido del modal */
 .alerta-modal-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  width: 80%;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
   max-width: 600px;
-  text-align: left;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  max-height: 80vh;
+  font-family: Arial, sans-serif;
 }
 
-/* Botón de cierre del modal */
-.modal-close-button {
-  background-color: red;
+/* Título del modal */
+.alerta-modal-content h2 {
+  text-align: center;
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* Contenedor de cada alerta */
+.alerta-item {
+  background-color: #f3f7fa;
+  border: 1px solid #cdd3d8;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s;
+}
+
+.alerta-item:hover {
+  background-color: #eaf2f8;
+}
+
+/* Información de cada alerta */
+.alerta-item strong {
+  color: #333;
+  font-weight: bold;
+}
+
+.alerta-item p {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #444;
+  line-height: 1.4;
+}
+
+/* Botón Ubicar */
+.modal-ubicar-button {
+  background-color: #007bff;
   color: white;
   border: none;
-  padding: 10px 20px;
-  font-size: 1rem;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
   border-radius: 5px;
+  margin-top: 10px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.modal-ubicar-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+.modal-ubicar-button:active {
+  background-color: #004494;
+}
+
+/* Botón Cerrar */
+.modal-close-button {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
   margin-top: 20px;
   display: block;
   margin-left: auto;
   margin-right: auto;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.modal-close-button:hover {
+  background-color: #c9302c;
+  transform: scale(1.05);
+}
+
+.modal-close-button:active {
+  background-color: #ac2925;
+}
+
+/* Scroll interno para el modal */
+.alerta-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.alerta-modal-content::-webkit-scrollbar-thumb {
+  background-color: #007bff;
+  border-radius: 4px;
+}
+
+.alerta-modal-content::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+
+/* Animación sutil para cada alerta */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alerta-item {
+  animation: fadeIn 0.3s ease-in-out;
 }

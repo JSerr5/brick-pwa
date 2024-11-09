@@ -107,7 +107,9 @@ const DashboardPolicia = ({ idPolicia }) => {
       <div className="policia-options">
         <button className="policia-button">Localizar Recluso</button>
         <button
-          className={`policia-button ${alertas.length > 0 ? "alerta-activa" : ""}`}
+          className={`policia-button ${
+            alertas.length > 0 ? "alerta-activa" : ""
+          }`}
           onClick={alertas.length > 0 ? toggleModal : null}
         >
           Ver Alertas
@@ -125,18 +127,37 @@ const DashboardPolicia = ({ idPolicia }) => {
             {alertas.length > 0 ? (
               <ul>
                 {alertas.map((alerta) => (
-                  <li key={alerta.id_dispositivo}>
-                    <strong>Recluso:</strong> {alerta.nombre} <br />
-                    <strong>Dispositivo:</strong> {alerta.id_dispositivo} <br />
-                    <strong>Última ubicación:</strong> Latitud {alerta.latitud}, Longitud {alerta.longitud} <br />
-                    <strong>Dirección:</strong> {alerta.direccion}
-                  </li>
+                  <div className="alerta-item" key={alerta.id_dispositivo}>
+                    <p>
+                      <strong>Recluso:</strong> {alerta.nombre}
+                    </p>
+                    <p>
+                      <strong>Dispositivo:</strong> {alerta.id_dispositivo}
+                    </p>
+                    <p>
+                      <strong>Última ubicación:</strong> Latitud{" "}
+                      {alerta.latitud}, Longitud {alerta.longitud}
+                    </p>
+                    <p>
+                      <strong>Dirección:</strong> {alerta.direccion}
+                    </p>
+                    <button
+                      className="modal-ubicar-button"
+                      onClick={() =>
+                        navigate(`/ubicar/${alerta.latitud}/${alerta.longitud}`)
+                      }
+                    >
+                      Ubicar
+                    </button>
+                  </div>
                 ))}
               </ul>
             ) : (
               <p>No hay alertas activas.</p>
             )}
-            <button className="modal-close-button" onClick={toggleModal}>Cerrar</button>
+            <button className="modal-close-button" onClick={toggleModal}>
+              Cerrar
+            </button>
           </div>
         </div>
       )}
