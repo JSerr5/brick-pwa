@@ -575,6 +575,26 @@ app.delete("/api/dispositivos/:id_dispositivo", async (req, res) => {
   }
 });
 
+// -------------------- Rutas para alertas de los dispositivos --------------------
+
+// Endpoint para obtener alertas activas (dispositivos fuera de rango)
+app.get('/api/alertas', async (req, res) => {
+  try {
+    // Consulta a la base de datos para obtener dispositivos con in_range = 0
+    const [alertas] = await pool.query(`
+      SELECT d.id_dispositivo, d.latitud, d.longitud, r.id_recluso, r.nombre, r.direccion
+      FROM dispositivos d
+      JOIN reclusos r ON r.dispositivo_asignado = d.id_dispositivo
+      WHERE d.in_range = 0
+    `);
+
+    res.json(alertas); // Devuelve solo las alertas activas
+  } catch (error) {
+    console.error("Error al obtener alertas activas:", error);
+    res.status(500).json({ error: "Error al obtener alertas" });
+  }
+});
+
 // -------------------- Manejo de rutas no encontradas --------------------
 
 // Rutas de API no encontradas

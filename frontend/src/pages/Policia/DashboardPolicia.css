@@ -46,8 +46,8 @@
 }
 
 .policia-button {
-  background-color: white;
-  border: 2px solid black;
+  background-color: rgb(255, 255, 255);
+  border: 2px solid rgb(0, 0, 0);
   padding: 20px;
   font-size: 1.2rem;
   cursor: pointer;
@@ -55,12 +55,28 @@
   border-radius: 10px;
   width: 250px;
   text-align: center;
+  color: rgb(0, 0, 0);
 }
 
 .policia-button:hover {
-  opacity: 0.9;
   transform: scale(1.1);
   transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Estilo del botón en estado de alerta */
+.policia-button.alerta-activa {
+  background-color: red;
+  color: white;
+  border: 2px solid darkred;
+  transform: scale(1.1);
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+
+/* Efecto de hover para el botón en estado de alerta */
+.policia-button.alerta-activa:hover {
+  background-color: darkred;
+  color: white;
+  transform: scale(1.15);
 }
 
 .logout-button {
@@ -118,4 +134,43 @@
     font-size: 1rem;
     padding: 8px 16px;
   }
+}
+
+/* Estilos para el fondo del modal */
+.alerta-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Estilos para el contenido del modal */
+.alerta-modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 600px;
+  text-align: left;
+}
+
+/* Botón de cierre del modal */
+.modal-close-button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
