@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import Alert from "../Alert/Alert"; // Importa el componente Alert
+import Alert from "../Alert/Alert";
 import "./DashboardTecnico.css";
 import tecnicoImageLeft from "../../assets/images/tecnico.jpg";
 import alertaImageRight from "../../assets/images/alertaTC.jpg";
@@ -15,7 +15,7 @@ const DashboardTecnico = () => {
 
   const [nombreTecnico, setNombreTecnico] = useState("");
   const [dispositivos, setDispositivos] = useState([]);
-  const [showAlert, setShowAlert] = useState(false); // Estado para controlar la alerta
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");

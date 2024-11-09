@@ -471,6 +471,37 @@ app.get("/api/dispositivos/:id_dispositivo", async (req, res) => {
   }
 });
 
+// Ruta para actualizar el estado de revisión y la fecha de revisión de un dispositivo por ID
+app.put("/api/dispositivos/:id_dispositivo", async (req, res) => {
+  const { id_dispositivo } = req.params;
+  const { revisado, date_revisado } = req.body;
+
+  // Verificar que date_revisado sea posterior a la fecha actual
+  const currentDate = new Date();
+  const selectedDate = new Date(date_revisado);
+  if (selectedDate <= currentDate) {
+    return res.status(400).json({ message: "La fecha de revisión debe ser posterior a la fecha actual." });
+  }
+
+  try {
+    const updateQuery = `
+      UPDATE dispositivos 
+      SET revisado = ?, date_revisado = ? 
+      WHERE id_dispositivo = ?
+    `;
+    const [result] = await pool.query(updateQuery, [revisado, date_revisado, id_dispositivo]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Dispositivo no encontrado" });
+    }
+
+    return res.status(200).json({ message: "Dispositivo actualizado correctamente" });
+  } catch (error) {
+    console.error("Error al actualizar el dispositivo:", error);
+    return res.status(500).json({ message: "Error al actualizar el dispositivo" });
+  }
+});
+
 // -------------------- Manejo de rutas no encontradas --------------------
 
 // Rutas de API no encontradas

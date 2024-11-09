@@ -22,9 +22,8 @@
 
 .gestionar-dispositivos p {
   font-size: 1.1rem;
-  color: #000000;
+  color: #000;
   margin-bottom: 30px;
-  margin-top: 0px;
 }
 
 .gestionar-dispositivos label {
@@ -60,33 +59,52 @@
   height: 20px;
 }
 
-.back-button {
+/* Nuevo contenedor para los botones en línea */
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Alinea verticalmente los botones */
+  gap: 15px;
+  width: 100%;
   margin-top: 20px;
-  padding: 12px 30px;
+}
+
+.back-button,
+.submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px; /* Asegura que ambos botones tengan el mismo padding */
   font-size: 1.2rem;
   font-weight: bold;
   color: #fff;
-  background-color: #007bff;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  width: 100%;
-  max-width: 200px;
+  width: 160px; /* Asegura el mismo ancho */
+  height: 50px; /* Asegura el mismo alto */
+  text-align: center;
+  box-sizing: border-box; /* Para evitar que padding afecte el tamaño */
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: 20px; /* Espacio desde el borde inferior */
+  background-color: #333333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0);
+}
+
+.back-button {
+  background-color: #007bff;
 }
 
 .back-button:hover {
   background-color: #0056b3;
 }
 
-body {
-  background-image: url("../../assets/images/tecnicoBG.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0;
+.submit-button {
+  background-color: #28a745;
+}
+
+.submit-button:hover {
+  background-color: #218838;
 }
