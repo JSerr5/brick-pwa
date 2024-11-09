@@ -459,11 +459,21 @@ app.get("/api/dispositivos/:id_dispositivo", async (req, res) => {
     const dispositivo = dispositivoQuery[0][0];
 
     if (!dispositivo) {
-      // *console.log("Dispositivo no encontrado");
       return res.status(404).json({ message: "Dispositivo no encontrado" });
     }
 
-    // Devolver la información del dispositivo
+    // Verificar si date_revisado es anterior a hoy y actualizar "revisado" a 0 si es necesario
+    const currentDate = new Date();
+    const reviewDate = new Date(dispositivo.date_revisado);
+    if (reviewDate < currentDate && dispositivo.revisado !== 0) {
+      await pool.query(
+        "UPDATE dispositivos SET revisado = 0 WHERE id_dispositivo = ?",
+        [id_dispositivo]
+      );
+      dispositivo.revisado = 0; // Actualizar también el objeto para enviar al frontend
+    }
+
+    // Devolver la información del dispositivo actualizada
     return res.json(dispositivo);
   } catch (error) {
     console.error("Error al obtener el dispositivo:", error);
