@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute.js";
 import GestionarTecnicos from "./pages/Admin/GestionarTecnicos";
 import GestionarPolicias from "./pages/Admin/GestionarPolicias";
 import GestionarDispositivos from "./pages/Dispositivos/GestionarDispositivos";
+import CrudDispositivos from "./pages/Dispositivos/CrudDispositivos";
 
 function App() {
   const [apiData, setApiData] = useState(null);
@@ -77,12 +78,21 @@ function App() {
           }
         />
 
-        {/* Rutas de CRUD para Dispositivos en Tecnicos */}
+        {/* Rutas de CRUD para Dispositivos en Técnicos */}
         <Route
           path="/gestionar-dispositivos"
           element={
             <ProtectedRoute>
               <GestionarDispositivos />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/crud-dispositivos"
+          element={
+            <ProtectedRoute>
+              <CrudDispositivos />
             </ProtectedRoute>
           }
         />

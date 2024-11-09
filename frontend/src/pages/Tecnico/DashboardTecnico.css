@@ -126,3 +126,18 @@
   color: red;
   font-weight: bold;
 }
+
+.crud-dispositivos-button {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.crud-dispositivos-button:hover {
+  background-color: #0056b3;
+}

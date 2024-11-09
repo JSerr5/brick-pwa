@@ -35,6 +35,7 @@ const ProtectedRoute = ({ children }) => {
       (userRole === "tecnico" &&
         !path.startsWith("/dashboard-tecnico") &&
         !path.startsWith("/gestionar-dispositivos") &&
+        !path.startsWith("/crud-dispositivos") &&
         !path.startsWith("/infoDispositivos")) ||
       (userRole === "policia" && !path.startsWith("/dashboard-policia")) ||
       (userRole === "admin" &&

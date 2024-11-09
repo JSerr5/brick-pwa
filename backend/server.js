@@ -490,7 +490,9 @@ app.put("/api/dispositivos/:id_dispositivo", async (req, res) => {
   const currentDate = new Date();
   const selectedDate = new Date(date_revisado);
   if (selectedDate <= currentDate) {
-    return res.status(400).json({ message: "La fecha de revisión debe ser posterior a la fecha actual." });
+    return res.status(400).json({
+      message: "La fecha de revisión debe ser posterior a la fecha actual.",
+    });
   }
 
   try {
@@ -499,16 +501,77 @@ app.put("/api/dispositivos/:id_dispositivo", async (req, res) => {
       SET revisado = ?, date_revisado = ? 
       WHERE id_dispositivo = ?
     `;
-    const [result] = await pool.query(updateQuery, [revisado, date_revisado, id_dispositivo]);
+    const [result] = await pool.query(updateQuery, [
+      revisado,
+      date_revisado,
+      id_dispositivo,
+    ]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Dispositivo no encontrado" });
     }
 
-    return res.status(200).json({ message: "Dispositivo actualizado correctamente" });
+    return res
+      .status(200)
+      .json({ message: "Dispositivo actualizado correctamente" });
   } catch (error) {
     console.error("Error al actualizar el dispositivo:", error);
-    return res.status(500).json({ message: "Error al actualizar el dispositivo" });
+    return res
+      .status(500)
+      .json({ message: "Error al actualizar el dispositivo" });
+  }
+});
+
+// Ruta para añadir un nuevo dispositivo
+app.post("/api/dispositivos", async (req, res) => {
+  try {
+    // Obtener el número máximo de ID en la base de datos y extraer solo la parte numérica después de 'd'
+    const lastDispositivoQuery = await pool.query(
+      "SELECT MAX(CAST(SUBSTRING(id_dispositivo, 2) AS UNSIGNED)) AS max_id FROM dispositivos"
+    );
+    const lastIdNumber = lastDispositivoQuery[0][0].max_id;
+
+    // Incrementar el número para el nuevo ID
+    const newIdNumber = lastIdNumber ? lastIdNumber + 1 : 1;
+    const newIdDispositivo = `d${newIdNumber}`;
+
+    // Insertar el nuevo dispositivo en la base de datos con la fecha actual
+    const insertQuery = `
+      INSERT INTO dispositivos (id_dispositivo, revisado, date_revisado)
+      VALUES (?, 0, CURDATE())
+    `;
+    await pool.query(insertQuery, [newIdDispositivo]);
+
+    return res.status(201).json({
+      message: "Dispositivo añadido correctamente",
+      dispositivo: { id_dispositivo: newIdDispositivo },
+    });
+  } catch (error) {
+    console.error("Error al añadir el dispositivo:", error);
+    return res.status(500).json({ message: "Error al añadir el dispositivo" });
+  }
+});
+
+// Ruta para eliminar un dispositivo por ID
+app.delete("/api/dispositivos/:id_dispositivo", async (req, res) => {
+  const { id_dispositivo } = req.params;
+
+  try {
+    const deleteQuery = "DELETE FROM dispositivos WHERE id_dispositivo = ?";
+    const [result] = await pool.query(deleteQuery, [id_dispositivo]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Dispositivo no encontrado" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Dispositivo eliminado correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar el dispositivo:", error);
+    return res
+      .status(500)
+      .json({ message: "Error al eliminar el dispositivo" });
   }
 });
 

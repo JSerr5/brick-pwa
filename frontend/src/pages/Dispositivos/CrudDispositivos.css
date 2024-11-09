@@ -1,0 +1,108 @@
+.cruddis-container {
+    width: 100%;
+    max-width: 500px;
+    background-color: rgba(0, 0, 0, 0.85); /* Fondo negro con opacidad */
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    color: #fff;
+}
+
+.cruddis-title-container {
+    margin-bottom: 20px;
+}
+
+.cruddis-title {
+    font-size: 2.2rem;
+    font-weight: bold;
+}
+
+.cruddis-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.cruddis-select {
+    width: 100%;
+    max-width: 450px;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #fff;
+    color: #333;
+    text-align: left;
+}
+
+.cruddis-input {
+    width: 100%;
+    max-width: 450px;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    color: #333;
+    text-align: center;
+}
+
+.cruddis-button-group {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cruddis-button {
+    flex: 1;
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-align: center;
+}
+
+.cruddis-delete {
+    background-color: #dc3545;
+}
+
+.cruddis-delete:hover {
+    background-color: #c82333;
+}
+
+.cruddis-add {
+    background-color: #007bff;
+}
+
+.cruddis-add:hover {
+    background-color: #0069d9;
+}
+
+.cruddis-back-button {
+    margin-top: 20px;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.cruddis-back-button:hover {
+    background-color: #0056b3;
+}
