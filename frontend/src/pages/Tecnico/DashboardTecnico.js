@@ -69,7 +69,7 @@ const DashboardTecnico = () => {
               const dispositivosConEstado = dispositivosData.map((device) => {
                 const fechaRevisado = new Date(device.date_revisado);
                 device.needsReview =
-                  fechaRevisado < hoy && device.revisado === 0;
+                  fechaRevisado <= hoy && device.revisado === 0;
                 return device;
               });
 

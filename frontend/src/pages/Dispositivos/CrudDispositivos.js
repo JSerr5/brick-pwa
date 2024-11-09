@@ -130,13 +130,26 @@ const CrudDispositivos = () => {
             ))}
           </select>
 
-          <input
-            type="text"
-            className="cruddis-input"
-            placeholder="ID del dispositivo"
-            value={selectedDispositivo}
-            readOnly
-          />
+          {(() => {
+            const dispositivoSeleccionado = dispositivos.find(
+              (d) => d.id_dispositivo === selectedDispositivo
+            );
+            return (
+              <input
+                type="text"
+                className="cruddis-input"
+                placeholder="ID del dispositivo"
+                value={`${selectedDispositivo || "No ID"} - ${
+                  dispositivoSeleccionado?.date_revisado
+                    ? new Date(
+                        dispositivoSeleccionado.date_revisado
+                      ).toLocaleDateString()
+                    : "Sin fecha"
+                }`}
+                readOnly
+              />
+            );
+          })()}
 
           <div className="cruddis-button-group">
             <button
