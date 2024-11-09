@@ -69,7 +69,7 @@
   margin-top: 20px;
 }
 
-.back-button,
+.back-button-gesdis,
 .submit-button {
   display: flex;
   align-items: center;
@@ -93,11 +93,11 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0);
 }
 
-.back-button {
+.back-button-gesdis {
   background-color: #007bff;
 }
 
-.back-button:hover {
+.back-button-gesdis:hover {
   background-color: #0056b3;
 }
 

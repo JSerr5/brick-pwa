@@ -137,7 +137,7 @@ const GestionarDispositivos = () => {
             <div className="button-container">
               <button
                 onClick={() => navigate(-1)}
-                className="button back-button"
+                className="button back-button-gesdis"
               >
                 Atrás
               </button>
