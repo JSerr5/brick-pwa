@@ -61,22 +61,31 @@ const DashboardTecnico = () => {
 
             if (dispositivosResponse.ok) {
               const dispositivosData = await dispositivosResponse.json();
-
+            
+              const hoy = new Date();
+              hoy.setHours(0, 0, 0, 0); // Asegúrate de eliminar las horas para comparar solo las fechas
+            
+              // Marcar los dispositivos que necesitan revisión
+              const dispositivosConEstado = dispositivosData.map((device) => {
+                const fechaRevisado = new Date(device.date_revisado);
+                device.needsReview = fechaRevisado < hoy && device.revisado === 0;
+                return device;
+              });
+            
               // Ordenar dispositivos: los que necesitan revisión primero
-              const sortedDevices = dispositivosData.sort(
+              const sortedDevices = dispositivosConEstado.sort(
                 (a, b) => b.needsReview - a.needsReview
               );
               setDispositivos(sortedDevices);
-
+            
               // Verificar si hay algún dispositivo que necesite revisión
-              const needsReview = sortedDevices.some(
-                (device) => device.needsReview
-              );
+              const needsReview = sortedDevices.some((device) => device.needsReview);
               setShowAlert(needsReview); // Mostrar la alerta si hay dispositivos a revisar
             } else {
               console.log("Error al obtener dispositivos.");
               navigate("/login");
             }
+            
           } else {
             navigate("/login");
           }

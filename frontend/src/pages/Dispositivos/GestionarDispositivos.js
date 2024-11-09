@@ -1,43 +1,51 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./GestionarDispositivos.css";
 
 const GestionarDispositivos = () => {
   const location = useLocation();
-  const [dispositivo, setDispositivo] = useState(null); // Estado para almacenar el dispositivo seleccionado
-  const [fechaRevisado, setFechaRevisado] = useState(""); // Estado para la nueva fecha de revisión
-  const [revisado, setRevisado] = useState(false); // Estado para el checkbox de revisión
+  const navigate = useNavigate();
+  const [dispositivo, setDispositivo] = useState(null);
+  const [fechaRevisado, setFechaRevisado] = useState("");
+  const [revisado, setRevisado] = useState(false);
 
-  // Obtener el ID del dispositivo de la URL
   const idDispositivo = new URLSearchParams(location.search).get("id");
 
   useEffect(() => {
-    // Obtener datos del dispositivo seleccionado
+    console.log("ID del dispositivo recibido:", idDispositivo);
+
+    if (!idDispositivo) {
+      console.error("No se encontró el ID del dispositivo en la URL.");
+      return;
+    }
+
     const fetchDispositivo = async () => {
       try {
-        const response = await fetch(`/api/dispositivos/${idDispositivo}`);
-        if (response.ok) {
+        const response = await fetch(
+          `http://localhost:4000/api/dispositivos/${idDispositivo}`
+        );
+        console.log("Respuesta del servidor:", response);
+
+        if (
+          response.headers.get("content-type")?.includes("application/json")
+        ) {
           const data = await response.json();
           setDispositivo(data);
-          setRevisado(data.revisado === 1); // Establecer el estado inicial del checkbox
+          setRevisado(data.revisado === 1);
+          console.log("Datos del dispositivo obtenidos:", data);
         } else {
-          console.error("Error al obtener el dispositivo.");
+          console.error("La respuesta no es JSON válida");
         }
       } catch (error) {
         console.error("Error al obtener el dispositivo:", error);
       }
     };
 
-    if (idDispositivo) fetchDispositivo();
+    fetchDispositivo();
   }, [idDispositivo]);
 
-  const handleDateChange = (e) => {
-    setFechaRevisado(e.target.value);
-  };
-
-  const handleCheckboxChange = (e) => {
-    setRevisado(e.target.checked);
-  };
+  const handleDateChange = (e) => setFechaRevisado(e.target.value);
+  const handleCheckboxChange = (e) => setRevisado(e.target.checked);
 
   return (
     <div className="gestionar-dispositivos">
@@ -46,22 +54,26 @@ const GestionarDispositivos = () => {
         <div>
           <p>ID del Dispositivo: {dispositivo.id_dispositivo}</p>
           <label>
-            Nueva Fecha de Revisión:
+            Nueva fecha de revisión:
             <input
               type="date"
               value={fechaRevisado}
               onChange={handleDateChange}
             />
           </label>
-          <label>
-            Revisado?
-            <input
-              type="checkbox"
-              checked={revisado}
-              onChange={handleCheckboxChange}
-            />
-          </label>
-          {/* Aquí se puede agregar el botón para confirmar la actualización en la base de datos */}
+          <div className="revisar-checkbox-container">
+            <label>
+              Revisado?
+              <input
+                type="checkbox"
+                checked={revisado}
+                onChange={handleCheckboxChange}
+              />
+            </label>
+          </div>
+          <button onClick={() => navigate(-1)} className="back-button">
+            Atrás
+          </button>
         </div>
       ) : (
         <p>Cargando información del dispositivo...</p>

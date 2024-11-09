@@ -156,7 +156,9 @@ const InfoDispositivo = () => {
       </table>
       {dispositivo.revisado === 0 && (
         <button
-          onClick={() => navigate("/gestionar-dispositivos")}
+          onClick={() =>
+            navigate(`/gestionar-dispositivos?id=${dispositivo.id_dispositivo}`)
+          }
           className="revisar-button"
         >
           Revisar Dispositivo
