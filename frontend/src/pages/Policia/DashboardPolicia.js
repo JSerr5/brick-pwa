@@ -105,7 +105,12 @@ const DashboardPolicia = ({ idPolicia }) => {
         </div>
       </header>
       <div className="policia-options">
-        <button className="policia-button">Ver Reclusos</button>
+        <button
+          className="policia-button"
+          onClick={() => navigate("/ver-reclusos")}
+        >
+          Ver Reclusos
+        </button>{" "}
         <button
           className={`policia-button ${
             alertas.length > 0 ? "alerta-activa" : ""

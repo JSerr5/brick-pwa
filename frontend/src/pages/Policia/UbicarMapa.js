@@ -1,10 +1,10 @@
-// UbicarMapa.js
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./UbicarMapa.css";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
+import policiaBG from "../../assets/images/policiaBG.jpg";
 
 // Icono personalizado para el marcador de ubicación
 const locationIcon = new L.Icon({
@@ -29,6 +29,9 @@ const UbicarMapa = () => {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(initialMap);
+
+    // Forzar redimensionado del mapa para evitar espacios en blanco
+    initialMap.invalidateSize();
 
     const initialMarker = L.marker([lat, lng], { icon: locationIcon })
       .addTo(initialMap)
@@ -113,7 +116,10 @@ const UbicarMapa = () => {
   };
 
   return (
-    <div className="ubicar-mapa">
+    <div
+      className="ubicar-mapa"
+      style={{ backgroundImage: `url(${policiaBG})` }}
+    >
       <div id="map" className="map-container"></div>
       <div className="button-container">
         <button className="zoom-button" onClick={handleZoom}>

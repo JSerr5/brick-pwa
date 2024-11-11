@@ -13,6 +13,7 @@ import GestionarDispositivos from "./pages/Dispositivos/GestionarDispositivos";
 import CrudDispositivos from "./pages/Dispositivos/CrudDispositivos";
 import UbicarMapa from "./pages/Policia/UbicarMapa";
 import GestionarReclusos from "./pages/Admin/GestionarReclusos.js";
+import VerReclusos from "./pages/Policia/VerReclusos.js";
 
 function App() {
   const [apiData, setApiData] = useState(null);
@@ -34,6 +35,15 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardPolicia />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/ver-reclusos"
+          element={
+            <ProtectedRoute>
+              <VerReclusos />
             </ProtectedRoute>
           }
         />

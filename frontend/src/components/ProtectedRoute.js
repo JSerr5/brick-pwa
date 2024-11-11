@@ -38,7 +38,7 @@ const ProtectedRoute = ({ children }) => {
         "/crud-dispositivos",
         "/infoDispositivos",
       ],
-      policia: ["/dashboard-policia", "/ubicar"],
+      policia: ["/dashboard-policia", "/ubicar", "/ver-reclusos"],
       admin: ["/dashboard-admin", "/gestionar-tecnicos", "/gestionar-policias", "/gestionar-reclusos"],
     };
 
