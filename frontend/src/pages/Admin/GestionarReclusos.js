@@ -178,6 +178,7 @@ const GestionarReclusos = () => {
             </option>
           ))}
         </select>
+
         <div className="gesrecluso-buttons">
           {isEditMode ? (
             <button
@@ -200,43 +201,45 @@ const GestionarReclusos = () => {
         </div>
       </div>
 
-      <table className="gesrecluso-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Dirección</th>
-            <th>Descripción</th>
-            <th>Dispositivo Asignado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reclusos.map((recluso) => (
-            <tr key={recluso.id_recluso}>
-              <td>{recluso.id_recluso}</td>
-              <td>{recluso.nombre}</td>
-              <td>{recluso.direccion}</td>
-              <td>{recluso.descripcion}</td>
-              <td>{recluso.dispositivo_asignado}</td>
-              <td>
-                <button
-                  className="editar"
-                  onClick={() => prepareEditForm(recluso)}
-                >
-                  Editar
-                </button>
-                <button
-                  className="eliminar"
-                  onClick={() => handleEliminarRecluso(recluso.id_recluso)}
-                >
-                  Eliminar
-                </button>
-              </td>
+      <div className="gesrecluso-table-wrapper">
+        <table className="gesrecluso-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Dirección</th>
+              <th>Descripción</th>
+              <th>Dispositivo Asignado</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {reclusos.map((recluso) => (
+              <tr key={recluso.id_recluso}>
+                <td>{recluso.id_recluso}</td>
+                <td>{recluso.nombre}</td>
+                <td>{recluso.direccion}</td>
+                <td>{recluso.descripcion}</td>
+                <td>{recluso.dispositivo_asignado}</td>
+                <td>
+                  <button
+                    className="editar"
+                    onClick={() => prepareEditForm(recluso)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    className="eliminar"
+                    onClick={() => handleEliminarRecluso(recluso.id_recluso)}
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <button className="gesrecluso-back-button" onClick={() => navigate(-1)}>
         Atrás
