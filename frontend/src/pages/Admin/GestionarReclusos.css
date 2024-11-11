@@ -1,14 +1,14 @@
 /* Estilos para el contenedor principal */
 .gesrecluso-gestionar {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
   background-size: cover;
-  min-height: 100vh;
-  overflow-y: scroll;
-  padding-bottom: 60px;
+  overflow-y: auto; /* Desplazamiento vertical en toda la página */
   box-sizing: border-box;
+  padding-bottom: 80px; /* Espacio extra para evitar que el botón esté encima de la tabla */
 }
 
 /* Título */
@@ -219,21 +219,20 @@
 
 /* Botón de regreso */
 .gesrecluso-back-button {
-  position: fixed;
-  bottom: 20px;
-  background-color: #6c757d;
+  position: relative;
+  background-color: #4aaaff;
   color: white;
   font-weight: bold;
   padding: 12px 25px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 10px;
+  margin-top: 20px; /* Asegura que quede en la parte inferior del contenido */
   transition: background-color 0.3s, transform 0.2s;
 }
 
 .gesrecluso-back-button:hover {
-  background-color: #5a6268;
+  background-color: #0b5c9a;
   transform: scale(1.05);
 }
 
