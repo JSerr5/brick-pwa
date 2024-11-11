@@ -1,0 +1,192 @@
+/* Estilos para el contenedor principal */
+.gesrecluso-gestionar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-size: cover;
+  min-height: 100vh;
+}
+
+/* Título */
+.gesrecluso-title-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.gesrecluso-titulo {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #000000;
+  background-color: rgba(255, 255, 255);
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+/* Contenedor del formulario */
+.gesrecluso-form-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 500px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+}
+
+/* Entradas del formulario */
+.gesrecluso-input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Grupo de botones */
+.gesrecluso-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.gesrecluso-button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.gesrecluso-button.actualizar {
+  background-color: #007bff;
+}
+
+.gesrecluso-button.actualizar:hover {
+  background-color: #0056b3;
+}
+
+.gesrecluso-button.agregar {
+  background-color: #28a745;
+}
+
+.gesrecluso-button.agregar:hover {
+  background-color: #218838;
+}
+
+.gesrecluso-button.cancelar {
+  background-color: #6c757d;
+}
+
+.gesrecluso-button.cancelar:hover {
+  background-color: #5a6268;
+}
+
+/* Tabla de reclusos */
+.gesrecluso-table {
+  width: 100%;
+  max-width: 800px;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gesrecluso-table th,
+.gesrecluso-table td {
+  padding: 15px;
+  text-align: left;
+  font-size: 1rem;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+}
+
+.gesrecluso-table th {
+  background-color: #007bff;
+  color: white;
+}
+
+.gesrecluso-table tr:hover {
+  background-color: #f2f2f2;
+}
+
+.gesrecluso-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Botones de acciones dentro de la tabla */
+.gesrecluso-table td button {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.gesrecluso-table td button:hover {
+  transform: scale(1.05);
+}
+
+.gesrecluso-table td button.editar {
+  background-color: #17a2b8;
+}
+
+.gesrecluso-table td button.editar:hover {
+  background-color: #138496;
+}
+
+.gesrecluso-table td button.eliminar {
+  background-color: #dc3545;
+}
+
+.gesrecluso-table td button.eliminar:hover {
+  background-color: #c82333;
+}
+
+/* Mensaje de alerta */
+.gesrecluso-alerta-mensaje {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ffc107;
+  color: #333;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Botón de regreso */
+.gesrecluso-back-button {
+  background-color: #6c757d;
+  color: white;
+  font-weight: bold;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.gesrecluso-back-button:hover {
+  background-color: #5a6268;
+  transform: scale(1.05);
+}

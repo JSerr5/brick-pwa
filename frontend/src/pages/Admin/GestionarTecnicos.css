@@ -108,6 +108,17 @@ html, body {
   margin-top: 10px;
 }
 
+/* Iconos dentro de los botones para CRUD de técnicos */
+.tecnico-button.actualizar::before {
+  content: "🔄 ";
+}
+.tecnico-button.eliminar::before {
+  content: "🗑️ ";
+}
+.tecnico-button.agregar::before {
+  content: "➕ ";
+}
+
 .back-button {
   margin-top: 25px;
   padding: 15px 45px;

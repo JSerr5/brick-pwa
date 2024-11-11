@@ -50,6 +50,17 @@ html, body {
   margin: 0 5px;
 }
 
+/* Iconos dentro de los botones para CRUD de policías */
+.policia-button.actualizar::before {
+  content: "🔄 ";
+}
+.policia-button.eliminar::before {
+  content: "🗑️ ";
+}
+.policia-button.agregar::before {
+  content: "➕ ";
+}
+
 .policia-form-container {
   background: rgba(0, 0, 0); 
   padding: 50px 20px;

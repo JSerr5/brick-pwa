@@ -89,6 +89,15 @@
     background-color: #0069d9;
 }
 
+/* Iconos dentro de los botones para CRUD de dispositivos (cruddis) */
+.cruddis-button.cruddis-delete::before {
+    content: "🗑️ ";
+}
+
+.cruddis-button.cruddis-add::before {
+    content: "➕ ";
+}
+
 .cruddis-back-button {
     margin-top: 20px;
     padding: 12px 30px;
@@ -105,4 +114,8 @@
 
 .cruddis-back-button:hover {
     background-color: #0056b3;
+}
+
+.cruddis-back-button::before {
+    content: "↩️ ";
 }

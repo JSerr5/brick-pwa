@@ -39,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
         "/infoDispositivos",
       ],
       policia: ["/dashboard-policia", "/ubicar"],
-      admin: ["/dashboard-admin", "/gestionar-tecnicos", "/gestionar-policias"],
+      admin: ["/dashboard-admin", "/gestionar-tecnicos", "/gestionar-policias", "/gestionar-reclusos"],
     };
 
     const isAuthorized = rolePaths[userRole]?.some((allowedPath) =>

@@ -1,3 +1,4 @@
+// UbicarMapa.js
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "./UbicarMapa.css";
@@ -8,8 +9,8 @@ import axios from "axios";
 // Icono personalizado para el marcador de ubicación
 const locationIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-  iconSize: [35, 35], // Tamaño del icono
-  iconAnchor: [17, 34], // Punto de anclaje para que la punta esté en la coordenada exacta
+  iconSize: [35, 35],
+  iconAnchor: [17, 34],
 });
 
 const UbicarMapa = () => {
@@ -18,21 +19,6 @@ const UbicarMapa = () => {
   const [map, setMap] = useState(null);
   const [marker, setMarker] = useState(null);
   const [dispositivoData, setDispositivoData] = useState(null);
-
-  // Nueva llamada en UbicarMapa.js
-  const fetchReclusoData = async () => {
-    try {
-      const response = await axios.get(
-        `http://localhost:4000/api/recluso/dispositivo/${id_dispositivo}`
-      );
-      setDispositivoData(response.data);
-    } catch (error) {
-      console.error(
-        "Error al obtener la información del recluso y dispositivo:",
-        error
-      );
-    }
-  };
 
   // Inicialización del mapa y marcador
   useEffect(() => {
@@ -51,9 +37,24 @@ const UbicarMapa = () => {
     setMap(initialMap);
     setMarker(initialMarker);
 
-    fetchReclusoData(); // Llamada inicial para obtener los datos
+    // Definir fetchReclusoData dentro del useEffect
+    const fetchReclusoData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:4000/api/recluso/dispositivo/${id_dispositivo}`
+        );
+        setDispositivoData(response.data);
+      } catch (error) {
+        console.error(
+          "Error al obtener la información del recluso y dispositivo:",
+          error
+        );
+      }
+    };
 
-    const interval = setInterval(fetchReclusoData, 10000); // Actualiza cada 10 segundos
+    fetchReclusoData();
+
+    const interval = setInterval(fetchReclusoData, 10000);
 
     return () => {
       clearInterval(interval);
@@ -72,17 +73,17 @@ const UbicarMapa = () => {
         longitud,
       } = dispositivoData;
 
-      // Actualizar el tooltip con la información del recluso
+      // Actualizar el tooltip con la información del recluso y agregar íconos
       marker.setTooltipContent(
-        `<strong>Recluso:</strong> ${recluso_nombre}<br/>
-         <strong>Dirección:</strong> ${direccion}<br/>
-         <strong>Delito:</strong> ${descripcion}<br/>
-         <strong>Última ubicación:</strong> ${latitud || lat}, ${
+        `<strong>👤 Recluso:</strong> ${recluso_nombre}<br/>
+         <strong>📍 Dirección:</strong> ${direccion}<br/>
+         <strong>⚖️ Delito:</strong> ${descripcion}<br/>
+         <strong>📌 Última ubicación:</strong> ${latitud || lat}, ${
           longitud || lng
         }`
       );
 
-      // Actualizar la posición del marcador y centrar el mapa si las coordenadas han cambiado
+      // Actualizar la posición del marcador en el mapa y aplicar animación
       if (
         latitud &&
         longitud &&
@@ -91,14 +92,23 @@ const UbicarMapa = () => {
       ) {
         marker.setLatLng([latitud, longitud]);
         map.setView([latitud, longitud], map.getZoom(), { animate: true });
+
+        // Agregar animación de rebote
+        const markerElement = marker.getElement();
+        if (markerElement) {
+          markerElement.classList.add("bounce");
+          setTimeout(() => {
+            markerElement.classList.remove("bounce");
+          }, 600); // Duración de la animación
+        }
       }
     }
-  }, [map, marker, dispositivoData]);
+  }, [map, marker, dispositivoData, lat, lng]);
 
   // Función para acercar el mapa al marcador
   const handleZoom = () => {
     if (map && marker) {
-      map.setView(marker.getLatLng(), 18); // Ajusta el zoom para acercar la vista
+      map.setView(marker.getLatLng(), 18, { animate: true });
     }
   };
 

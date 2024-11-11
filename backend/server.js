@@ -32,6 +32,7 @@ const __dirname = path.dirname(__filename);
 
 // Configuración de CORS para permitir solo el frontend local en HTTP y HTTPS
 const allowedOrigins = ["http://localhost:3000", "https://localhost:3443"];
+
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -615,13 +616,134 @@ app.get("/api/recluso/dispositivo/:id_dispositivo", async (req, res) => {
     console.log("Resultado de la consulta:", dispositivo);
 
     if (!dispositivo) {
-      return res.status(404).json({ message: "Dispositivo no encontrado o sin recluso asignado" });
+      return res
+        .status(404)
+        .json({ message: "Dispositivo no encontrado o sin recluso asignado" });
     }
 
     res.json(dispositivo);
   } catch (error) {
-    console.error("Error al obtener la información del recluso y dispositivo:", error);
-    res.status(500).json({ message: "Error en el servidor al obtener el dispositivo" });
+    console.error(
+      "Error al obtener la información del recluso y dispositivo:",
+      error
+    );
+    res
+      .status(500)
+      .json({ message: "Error en el servidor al obtener el dispositivo" });
+  }
+});
+
+// -------------------- Rutas para manejar reclusos --------------------
+
+// Crear un nuevo recluso
+app.post("/api/reclusos", async (req, res) => {
+  const { nombre, direccion, descripcion, dispositivo_asignado } = req.body;
+
+  try {
+    // Obtener el último ID de recluso y generar un nuevo ID
+    const lastReclusoQuery = await pool.query(
+      "SELECT MAX(CAST(SUBSTRING(id_recluso, 2) AS UNSIGNED)) AS max_id FROM reclusos"
+    );
+    const lastIdNumber = lastReclusoQuery[0][0].max_id;
+    const newIdNumber = lastIdNumber ? lastIdNumber + 1 : 1;
+    const newIdRecluso = `r${newIdNumber}`;
+
+    // Insertar el nuevo recluso en la base de datos
+    await pool.query(
+      `INSERT INTO reclusos (id_recluso, nombre, direccion, descripcion, dispositivo_asignado)
+       VALUES (?, ?, ?, ?, ?)`,
+      [newIdRecluso, nombre, direccion, descripcion, dispositivo_asignado]
+    );
+
+    return res.status(201).json({
+      message: "Recluso creado correctamente",
+      recluso: {
+        id_recluso: newIdRecluso,
+        nombre,
+        direccion,
+        descripcion,
+        dispositivo_asignado,
+      },
+    });
+  } catch (error) {
+    console.error("Error al crear el recluso:", error);
+    res.status(500).json({ message: "Error al crear el recluso" });
+  }
+});
+
+// Obtener todos los reclusos
+app.get("/api/reclusos", async (req, res) => {
+  try {
+    const reclusosQuery = await pool.query(
+      `SELECT id_recluso, nombre, direccion, descripcion, dispositivo_asignado
+       FROM reclusos`
+    );
+    res.json(reclusosQuery[0]);
+  } catch (error) {
+    console.error("Error al obtener reclusos:", error);
+    res.status(500).json({ message: "Error al obtener reclusos" });
+  }
+});
+
+// Actualizar un recluso
+app.put("/api/reclusos/:id_recluso", async (req, res) => {
+  const { id_recluso } = req.params;
+  const { nombre, direccion, descripcion, dispositivo_asignado } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE reclusos
+       SET nombre = ?, direccion = ?, descripcion = ?, dispositivo_asignado = ?
+       WHERE id_recluso = ?`,
+      [nombre, direccion, descripcion, dispositivo_asignado, id_recluso]
+    );
+
+    if (result[0].affectedRows === 0) {
+      return res.status(404).json({ message: "Recluso no encontrado" });
+    }
+
+    res.json({ message: "Recluso actualizado correctamente" });
+  } catch (error) {
+    console.error("Error al actualizar recluso:", error);
+    res.status(500).json({ message: "Error al actualizar el recluso" });
+  }
+});
+
+// Eliminar un recluso
+app.delete("/api/reclusos/:id_recluso", async (req, res) => {
+  const { id_recluso } = req.params;
+
+  try {
+    const result = await pool.query(
+      "DELETE FROM reclusos WHERE id_recluso = ?",
+      [id_recluso]
+    );
+
+    if (result[0].affectedRows === 0) {
+      return res.status(404).json({ message: "Recluso no encontrado" });
+    }
+
+    res.json({ message: "Recluso eliminado correctamente" });
+  } catch (error) {
+    console.error("Error al eliminar recluso:", error);
+    res.status(500).json({ message: "Error al eliminar el recluso" });
+  }
+});
+
+// -------------------- Ruta para obtener dispositivos disponibles --------------------
+
+// Obtener dispositivos no asignados a reclusos
+app.get("/api/dispositivos-disponibles", async (req, res) => {
+  try {
+    const dispositivosQuery = await pool.query(
+      `SELECT id_dispositivo
+       FROM dispositivos
+       WHERE id_dispositivo NOT IN (SELECT dispositivo_asignado FROM reclusos WHERE dispositivo_asignado IS NOT NULL)`
+    );
+    res.json(dispositivosQuery[0]);
+  } catch (error) {
+    console.error("Error al obtener dispositivos disponibles:", error);
+    res.status(500).json({ message: "Error al obtener dispositivos disponibles" });
   }
 });
 

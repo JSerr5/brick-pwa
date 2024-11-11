@@ -10,6 +10,7 @@ const DashboardAdmin = () => {
   const navigate = useNavigate();
   const [tecnicos, setTecnicos] = useState([]);
   const [policias, setPolicias] = useState([]);
+  const [reclusos, setReclusos] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -40,6 +41,7 @@ const DashboardAdmin = () => {
             const data = await response.json();
             setTecnicos(data.tecnicos);
             setPolicias(data.policias);
+            setReclusos(data.reclusos);
           } else {
             setError("Error al obtener los datos de administradores");
             navigate("/login");
@@ -86,12 +88,21 @@ const DashboardAdmin = () => {
         >
           Gestionar Técnicos
         </button>
+
         <button
           className="admin-button"
           onClick={() => navigate("/gestionar-policias")}
         >
           Gestionar Policías
         </button>
+
+        <button
+          className="admin-button"
+          onClick={() => navigate("/gestionar-reclusos")}
+        >
+          Gestionar Reclusos
+        </button>
+
       </div>
 
       {error && <p className="error-message">{error}</p>}

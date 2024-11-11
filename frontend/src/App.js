@@ -12,6 +12,7 @@ import GestionarPolicias from "./pages/Admin/GestionarPolicias";
 import GestionarDispositivos from "./pages/Dispositivos/GestionarDispositivos";
 import CrudDispositivos from "./pages/Dispositivos/CrudDispositivos";
 import UbicarMapa from "./pages/Policia/UbicarMapa";
+import GestionarReclusos from "./pages/Admin/GestionarReclusos.js";
 
 function App() {
   const [apiData, setApiData] = useState(null);
@@ -85,6 +86,14 @@ function App() {
           element={
             <ProtectedRoute>
               <GestionarPolicias />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gestionar-reclusos"
+          element={
+            <ProtectedRoute>
+              <GestionarReclusos />
             </ProtectedRoute>
           }
         />
