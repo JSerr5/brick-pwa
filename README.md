@@ -76,6 +76,8 @@ El proyecto está desarrollado utilizando las siguientes tecnologías:
     - En el directorio `frontend`:
         ```bash
         npm start
+        o
+        node https-server.js
         ```
 
 ## Contribuciones 🤝
