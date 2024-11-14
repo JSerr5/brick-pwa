@@ -586,7 +586,7 @@ app.get("/api/alertas", async (req, res) => {
       SELECT d.id_dispositivo, d.latitud, d.longitud, r.id_recluso, r.nombre, r.direccion
       FROM dispositivos d
       JOIN reclusos r ON r.dispositivo_asignado = d.id_dispositivo
-      WHERE d.in_range = 0
+      WHERE d.in_range = 0 OR d.open_close = 1
     `);
 
     res.json(alertas); // Devuelve solo las alertas activas
@@ -743,7 +743,9 @@ app.get("/api/dispositivos-disponibles", async (req, res) => {
     res.json(dispositivosQuery[0]);
   } catch (error) {
     console.error("Error al obtener dispositivos disponibles:", error);
-    res.status(500).json({ message: "Error al obtener dispositivos disponibles" });
+    res
+      .status(500)
+      .json({ message: "Error al obtener dispositivos disponibles" });
   }
 });
 
